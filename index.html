@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panda Escape!</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1>🐼 Panda Escape! 🐼</h1>
+    
+    <div class="game-container">
+        <canvas id="gameCanvas" width="800" height="500" tabindex="0"></canvas>
+        <div class="level-indicator" id="levelIndicator" style="display: none;">
+            📍 Level 1: Bamboo Forest
+        </div>
+        <div class="goal-indicator" id="goalIndicator" style="display: none;">
+            🎯 Goal: 0/5 🎋
+        </div>
+        <div id="gameOverlay" class="visible">
+            <div class="start-screen">
+                <h2>Welcome!</h2>
+                <p>Use arrow keys to navigate!<br>Collect bamboo and avoid jaguars!</p>
+                <button class="game-btn" id="startBtn">PRESS ENTER OR CLICK TO START</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="info-panel">
+        <div class="stat">
+            <span class="stat-icon">🗺️</span>
+            <span>Level: <span id="currentLevel">-</span></span>
+        </div>
+        <div class="stat">
+            <span class="stat-icon">🎋</span>
+            <span>Bamboo: <span id="bambooCount">0</span></span>
+        </div>
+        <div class="stat">
+            <span class="stat-icon">⏱️</span>
+            <span>Time: <span id="timeDisplay">0</span>s</span>
+        </div>
+        <div class="stat">
+            <span class="stat-icon">⭐</span>
+            <span>Stars: <span id="totalStars">0</span>/15</span>
+        </div>
+    </div>
+    
+    <div class="controls-hint" id="controlsHint">
+        Press ENTER to start! Use arrow keys to play.
+    </div>
+
+    <!-- Debug display - shows what keys are pressed -->
+    <div id="debugKeys">Waiting for key press...</div>
+
+    <script src="game.js"></script>
+</body>
+</html>
