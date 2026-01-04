@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Panda Escape!</title>
     <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
@@ -21,9 +21,20 @@
         <div id="gameOverlay" class="visible">
             <div class="start-screen">
                 <h2>Welcome!</h2>
-                <p>Use arrow keys to navigate!<br>Collect bamboo and avoid jaguars!</p>
-                <button class="game-btn" id="startBtn">PRESS ENTER OR CLICK TO START</button>
+                <p>Collect bamboo and avoid jaguars!</p>
+                <button class="game-btn" id="startBtn">TAP TO START</button>
             </div>
+        </div>
+    </div>
+    
+    <!-- Mobile D-Pad Controls -->
+    <div class="mobile-controls" id="mobileControls">
+        <div class="dpad">
+            <button class="dpad-btn dpad-up" id="btnUp">▲</button>
+            <button class="dpad-btn dpad-left" id="btnLeft">◀</button>
+            <button class="dpad-btn dpad-center" id="btnAction">●</button>
+            <button class="dpad-btn dpad-right" id="btnRight">▶</button>
+            <button class="dpad-btn dpad-down" id="btnDown">▼</button>
         </div>
     </div>
     
@@ -47,11 +58,10 @@
     </div>
     
     <div class="controls-hint" id="controlsHint">
-        Press ENTER to start! Use arrow keys to play.
+        Tap to start! Use D-pad or arrow keys to play.
     </div>
 
-    <!-- Debug display - shows what keys are pressed -->
-    <div id="debugKeys">Waiting for key press...</div>
+    <div id="debugKeys" style="display:none;"></div>
 
     <script src="game.js"></script>
 </body>

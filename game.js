@@ -888,27 +888,140 @@ function gameLoop(timestamp) {
     requestAnimationFrame(gameLoop);
 }
 
+// ==================== MOBILE TOUCH CONTROLS ====================
+function setupMobileControls() {
+    const btnUp = document.getElementById('btnUp');
+    const btnDown = document.getElementById('btnDown');
+    const btnLeft = document.getElementById('btnLeft');
+    const btnRight = document.getElementById('btnRight');
+    const btnAction = document.getElementById('btnAction');
+    
+    if (!btnUp) return; // Mobile controls not present
+    
+    // Helper to handle touch start
+    function handleTouchStart(btn, direction) {
+        btn.addEventListener('touchstart', function(e) {
+            e.preventDefault();
+            keysPressed[direction] = true;
+            btn.classList.add('pressed');
+            
+            // Also handle map navigation
+            if (currentMode === MODE_MAP && !overlay.classList.contains('visible')) {
+                if (direction === 'left') {
+                    selectedLevelIndex = (selectedLevelIndex - 1 + levels.length) % levels.length;
+                } else if (direction === 'right') {
+                    selectedLevelIndex = (selectedLevelIndex + 1) % levels.length;
+                } else if (direction === 'up') {
+                    selectedLevelIndex = findNearestLevel('up');
+                } else if (direction === 'down') {
+                    selectedLevelIndex = findNearestLevel('down');
+                }
+            }
+        }, { passive: false });
+        
+        btn.addEventListener('touchend', function(e) {
+            e.preventDefault();
+            keysPressed[direction] = false;
+            btn.classList.remove('pressed');
+        }, { passive: false });
+        
+        btn.addEventListener('touchcancel', function(e) {
+            keysPressed[direction] = false;
+            btn.classList.remove('pressed');
+        }, { passive: false });
+    }
+    
+    // Setup direction buttons
+    handleTouchStart(btnUp, 'up');
+    handleTouchStart(btnDown, 'down');
+    handleTouchStart(btnLeft, 'left');
+    handleTouchStart(btnRight, 'right');
+    
+    // Action button (Enter/Select)
+    btnAction.addEventListener('touchstart', function(e) {
+        e.preventDefault();
+        btnAction.classList.add('pressed');
+        
+        if (overlay.classList.contains('visible')) {
+            // Click the main button in overlay
+            const btn = document.getElementById('startBtn') || 
+                        document.getElementById('nextBtn') || 
+                        document.getElementById('retryBtn');
+            if (btn) btn.click();
+        } else if (currentMode === MODE_MAP) {
+            // Start selected level
+            if (levels[selectedLevelIndex].unlocked) {
+                startLevel(selectedLevelIndex);
+            }
+        } else if (currentMode === MODE_PLAYING) {
+            // Could be used for special action, for now just show map
+            showMap();
+        }
+    }, { passive: false });
+    
+    btnAction.addEventListener('touchend', function(e) {
+        e.preventDefault();
+        btnAction.classList.remove('pressed');
+    }, { passive: false });
+    
+    // Prevent default touch behavior on the game area
+    canvas.addEventListener('touchstart', function(e) {
+        if (currentMode === MODE_MAP && !overlay.classList.contains('visible')) {
+            // Handle tap on map to select level
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const touch = e.touches[0];
+            const x = (touch.clientX - rect.left) * scaleX;
+            const y = (touch.clientY - rect.top) * scaleY;
+            
+            for (let i = 0; i < levels.length; i++) {
+                const level = levels[i];
+                const dx = x - level.x;
+                const dy = y - level.y;
+                if (Math.sqrt(dx*dx + dy*dy) < 50 && level.unlocked) {
+                    startLevel(i);
+                    e.preventDefault();
+                    return;
+                }
+            }
+        }
+    }, { passive: false });
+    
+    // Prevent scrolling/zooming when touching game area
+    document.body.addEventListener('touchmove', function(e) {
+        if (e.target.closest('.game-container') || e.target.closest('.mobile-controls')) {
+            e.preventDefault();
+        }
+    }, { passive: false });
+    
+    console.log('Mobile touch controls initialized!');
+}
+
 // ==================== INIT ====================
 function init() {
     loadProgress();
     setupKeyboardControls();
+    setupMobileControls();
     
     // Start button
     document.getElementById('startBtn').onclick = showMap;
     
-    // Click handler for map
+    // Click handler for map (mouse)
     canvas.onclick = function(e) {
         if (currentMode !== MODE_MAP || overlay.classList.contains('visible')) return;
         
         const rect = canvas.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        const x = (e.clientX - rect.left) * scaleX;
+        const y = (e.clientY - rect.top) * scaleY;
         
         for (let i = 0; i < levels.length; i++) {
             const level = levels[i];
             const dx = x - level.x;
             const dy = y - level.y;
-            if (Math.sqrt(dx*dx + dy*dy) < 40 && level.unlocked) {
+            if (Math.sqrt(dx*dx + dy*dy) < 50 && level.unlocked) {
                 startLevel(i);
                 return;
             }
@@ -918,7 +1031,7 @@ function init() {
     // Initial draw
     drawMap();
     
-    console.log('Panda Escape initialized! Keyboard controls ready.');
+    console.log('Panda Escape initialized! Keyboard + Touch controls ready.');
 }
 
 // Start the game
