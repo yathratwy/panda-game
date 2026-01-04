@@ -38,7 +38,7 @@ const levels = [
     {
         id: 1, name: "Bamboo Forest", icon: "🎋",
         x: 150, y: 280, unlocked: true, completed: false, stars: 0,
-        bambooGoal: 5, maxJaguars: 2, jaguarSpeed: 1.5, spawnInterval: 15000,
+        bambooGoal: 3, maxJaguars: 1, jaguarSpeed: 1.0, spawnInterval: 20000,
         theme: { bg1: '#c8e6c9', bg2: '#a5d6a7', bg3: '#81c784', grassColor: '#4a7c4f' },
         obstacles: [
             { type: 'tree', x: 120, y: 100 }, { type: 'tree', x: 680, y: 120 },
@@ -50,7 +50,7 @@ const levels = [
     {
         id: 2, name: "Mountain Peak", icon: "⛰️",
         x: 300, y: 120, unlocked: false, completed: false, stars: 0,
-        bambooGoal: 7, maxJaguars: 2, jaguarSpeed: 1.8, spawnInterval: 12000,
+        bambooGoal: 4, maxJaguars: 1, jaguarSpeed: 1.2, spawnInterval: 18000,
         theme: { bg1: '#b0bec5', bg2: '#90a4ae', bg3: '#78909c', grassColor: '#607d8b' },
         obstacles: [
             { type: 'rock', x: 150, y: 150 }, { type: 'rock', x: 650, y: 150 },
@@ -62,7 +62,7 @@ const levels = [
     {
         id: 3, name: "Desert Oasis", icon: "🏜️",
         x: 500, y: 350, unlocked: false, completed: false, stars: 0,
-        bambooGoal: 8, maxJaguars: 3, jaguarSpeed: 2.0, spawnInterval: 10000,
+        bambooGoal: 5, maxJaguars: 2, jaguarSpeed: 1.3, spawnInterval: 15000,
         theme: { bg1: '#ffe0b2', bg2: '#ffcc80', bg3: '#ffb74d', grassColor: '#8d6e63' },
         obstacles: [
             { type: 'rock', x: 150, y: 200 }, { type: 'rock', x: 650, y: 300 },
@@ -73,7 +73,7 @@ const levels = [
     {
         id: 4, name: "Snowy Tundra", icon: "❄️",
         x: 650, y: 150, unlocked: false, completed: false, stars: 0,
-        bambooGoal: 10, maxJaguars: 3, jaguarSpeed: 1.6, spawnInterval: 10000,
+        bambooGoal: 6, maxJaguars: 2, jaguarSpeed: 1.2, spawnInterval: 15000,
         theme: { bg1: '#e3f2fd', bg2: '#bbdefb', bg3: '#90caf9', grassColor: '#b3e5fc' },
         obstacles: [
             { type: 'tree', x: 150, y: 120 }, { type: 'tree', x: 650, y: 120 },
@@ -84,7 +84,7 @@ const levels = [
     {
         id: 5, name: "Jungle Temple", icon: "🛕",
         x: 400, y: 420, unlocked: false, completed: false, stars: 0,
-        bambooGoal: 12, maxJaguars: 3, jaguarSpeed: 2.2, spawnInterval: 8000,
+        bambooGoal: 7, maxJaguars: 2, jaguarSpeed: 1.5, spawnInterval: 12000,
         theme: { bg1: '#a5d6a7', bg2: '#81c784', bg3: '#66bb6a', grassColor: '#2e7d32' },
         obstacles: [
             { type: 'rock', x: 250, y: 120 }, { type: 'tree', x: 100, y: 200 },
@@ -96,7 +96,7 @@ const levels = [
 ];
 
 // Game objects
-const panda = { x: 400, y: 250, size: 45, speed: 4.5 };
+const panda = { x: 400, y: 250, size: 45, speed: 5.5 };
 let jaguars = [];
 let obstacles = [];
 let bambooPickups = [];
@@ -756,7 +756,7 @@ function startLevel(levelIndex) {
     
     for (let i = 0; i < 3; i++) spawnBamboo();
     
-    setTimeout(() => { if (gameRunning) spawnJaguar(); }, 3000);
+    setTimeout(() => { if (gameRunning) spawnJaguar(); }, 5000);
     
     overlay.classList.remove('visible');
     levelIndicator.style.display = 'block';
