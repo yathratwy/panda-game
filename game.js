@@ -19,6 +19,9 @@ const MODE_PARTY_HUB = 'party_hub';
 const MODE_MINIGAME_CATCH = 'minigame_catch';
 const MODE_MINIGAME_DANCE = 'minigame_dance';
 const MODE_MINIGAME_MEMORY = 'minigame_memory';
+const MODE_MINIGAME_RUNNER = 'minigame_runner';
+const MODE_MINIGAME_BALLOON = 'minigame_balloon';
+const MODE_MINIGAME_PONG = 'minigame_pong';
 let currentMode = MODE_MAP;
 
 // Party/Confetti system
@@ -271,6 +274,21 @@ function handleKeyDown(e) {
         return;
     }
     
+    if (currentMode === MODE_MINIGAME_RUNNER) {
+        handleRunnerKeys(key);
+        return;
+    }
+    
+    if (currentMode === MODE_MINIGAME_BALLOON) {
+        handleBalloonKeys(key);
+        return;
+    }
+    
+    if (currentMode === MODE_MINIGAME_PONG) {
+        handlePongKeys(key);
+        return;
+    }
+    
     if (overlay.classList.contains('visible')) {
         handleOverlayKeys(key);
     } else if (currentMode === MODE_MAP) {
@@ -362,11 +380,18 @@ function handlePartyHubKeys(key) {
         return;
     }
     
+    const cols = 3;
     if (key === 'ArrowLeft' || key === 'a' || key === 'A') {
         selectedMiniGame = (selectedMiniGame - 1 + miniGames.length) % miniGames.length;
     }
     if (key === 'ArrowRight' || key === 'd' || key === 'D') {
         selectedMiniGame = (selectedMiniGame + 1) % miniGames.length;
+    }
+    if (key === 'ArrowUp' || key === 'w' || key === 'W') {
+        selectedMiniGame = (selectedMiniGame - cols + miniGames.length) % miniGames.length;
+    }
+    if (key === 'ArrowDown' || key === 's' || key === 'S') {
+        selectedMiniGame = (selectedMiniGame + cols) % miniGames.length;
     }
     if (key === 'Enter' || key === ' ') {
         launchSelectedMiniGame();
@@ -383,6 +408,18 @@ function handlePartyHubKeys(key) {
         selectedMiniGame = 2;
         launchSelectedMiniGame();
     }
+    if (key === '4') {
+        selectedMiniGame = 3;
+        launchSelectedMiniGame();
+    }
+    if (key === '5') {
+        selectedMiniGame = 4;
+        launchSelectedMiniGame();
+    }
+    if (key === '6') {
+        selectedMiniGame = 5;
+        launchSelectedMiniGame();
+    }
     if (key === 'Escape' || key === 'm' || key === 'M') {
         exitParty();
     }
@@ -393,6 +430,9 @@ function launchSelectedMiniGame() {
         case 0: startBambooCatch(); break;
         case 1: startPandaDance(); break;
         case 2: startMemoryMatch(); break;
+        case 3: startPandaRunner(); break;
+        case 4: startBalloonPop(); break;
+        case 5: startPandaPong(); break;
     }
 }
 
@@ -1620,7 +1660,10 @@ function partyLoop(timestamp) {
 const miniGames = [
     { id: 'catch', name: 'Bamboo Catch', icon: '🎋', desc: 'Catch falling bamboo!', color: '#4ade80' },
     { id: 'dance', name: 'Panda Dance', icon: '💃', desc: 'Match the arrows!', color: '#f472b6' },
-    { id: 'memory', name: 'Memory Match', icon: '🧠', desc: 'Find the pairs!', color: '#60a5fa' }
+    { id: 'memory', name: 'Memory Match', icon: '🧠', desc: 'Find the pairs!', color: '#60a5fa' },
+    { id: 'runner', name: 'Panda Run', icon: '🏃', desc: 'Jump over obstacles!', color: '#fbbf24' },
+    { id: 'balloon', name: 'Balloon Pop', icon: '🎈', desc: 'Pop the balloons!', color: '#ef4444' },
+    { id: 'pong', name: 'Panda Pong', icon: '🏓', desc: 'Beat the computer!', color: '#8b5cf6' }
 ];
 
 function startPartyHub() {
@@ -1658,20 +1701,27 @@ function partyHubLoop(timestamp) {
     ctx.fillStyle = '#ffd700';
     ctx.fillText('Choose a mini-game to play!', canvas.width / 2, 110);
     
-    // Draw mini-game cards
-    const cardWidth = 180;
-    const cardHeight = 200;
-    const startX = (canvas.width - (miniGames.length * cardWidth + (miniGames.length - 1) * 30)) / 2;
-    const cardY = 160;
+    // Draw mini-game cards in 2 rows of 3
+    const cardWidth = 140;
+    const cardHeight = 150;
+    const cols = 3;
+    const gap = 20;
+    const totalWidth = cols * cardWidth + (cols - 1) * gap;
+    const startX = (canvas.width - totalWidth) / 2;
+    const startY = 130;
+    const rowGap = 20;
     
     miniGames.forEach((game, index) => {
-        const cardX = startX + index * (cardWidth + 30);
+        const row = Math.floor(index / cols);
+        const col = index % cols;
+        const cardX = startX + col * (cardWidth + gap);
+        const cardY = startY + row * (cardHeight + rowGap);
         const isSelected = index === selectedMiniGame;
         const hoverBounce = isSelected ? Math.sin(time * 6) * 5 : 0;
         
         // Card shadow
         ctx.fillStyle = 'rgba(0,0,0,0.3)';
-        ctx.fillRect(cardX + 5, cardY + 5 - hoverBounce, cardWidth, cardHeight);
+        ctx.fillRect(cardX + 4, cardY + 4 - hoverBounce, cardWidth, cardHeight);
         
         // Card background
         const cardGradient = ctx.createLinearGradient(cardX, cardY, cardX, cardY + cardHeight);
@@ -1686,35 +1736,35 @@ function partyHubLoop(timestamp) {
         ctx.strokeRect(cardX, cardY - hoverBounce, cardWidth, cardHeight);
         
         // Icon
-        ctx.font = '60px sans-serif';
+        ctx.font = '45px sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText(game.icon, cardX + cardWidth / 2, cardY + 70 - hoverBounce);
+        ctx.fillText(game.icon, cardX + cardWidth / 2, cardY + 55 - hoverBounce);
         
         // Name
-        ctx.font = 'bold 18px sans-serif';
+        ctx.font = 'bold 15px sans-serif';
         ctx.fillStyle = '#fff';
-        ctx.fillText(game.name, cardX + cardWidth / 2, cardY + 110 - hoverBounce);
+        ctx.fillText(game.name, cardX + cardWidth / 2, cardY + 85 - hoverBounce);
         
         // Description
-        ctx.font = '14px sans-serif';
+        ctx.font = '12px sans-serif';
         ctx.fillStyle = '#ddd';
-        ctx.fillText(game.desc, cardX + cardWidth / 2, cardY + 140 - hoverBounce);
+        ctx.fillText(game.desc, cardX + cardWidth / 2, cardY + 105 - hoverBounce);
         
         // Number key hint
-        ctx.font = 'bold 16px sans-serif';
+        ctx.font = 'bold 14px sans-serif';
         ctx.fillStyle = isSelected ? '#ffd700' : '#888';
-        ctx.fillText(`Press ${index + 1}`, cardX + cardWidth / 2, cardY + cardHeight - 20 - hoverBounce);
+        ctx.fillText(`[${index + 1}]`, cardX + cardWidth / 2, cardY + cardHeight - 12 - hoverBounce);
     });
     
     // Instructions
-    ctx.font = 'bold 18px sans-serif';
+    ctx.font = 'bold 16px sans-serif';
     ctx.fillStyle = '#fff';
     ctx.textAlign = 'center';
-    ctx.fillText('← → to select | ENTER to play | ESC for map', canvas.width / 2, canvas.height - 70);
+    ctx.fillText('← → ↑ ↓ to select | ENTER to play | ESC for map', canvas.width / 2, canvas.height - 50);
     
     // Draw small dancing panda
-    drawSmallDancingPanda(80, canvas.height - 100, time);
-    drawSmallDancingPanda(canvas.width - 80, canvas.height - 100, time);
+    drawSmallDancingPanda(60, canvas.height - 70, time);
+    drawSmallDancingPanda(canvas.width - 60, canvas.height - 70, time);
     
     requestAnimationFrame(partyHubLoop);
 }
@@ -2426,6 +2476,724 @@ function endMemoryMatch() {
     
     document.getElementById('backBtn').onclick = startPartyHub;
     document.getElementById('retryMiniBtn').onclick = startMemoryMatch;
+}
+
+// ==================== MINI GAME: PANDA RUNNER ====================
+function startPandaRunner() {
+    currentMode = MODE_MINIGAME_RUNNER;
+    miniGameScore = 0;
+    partyStartTime = performance.now() / 1000;
+    miniGameData = {
+        pandaY: canvas.height - 100,
+        pandaVelY: 0,
+        isJumping: false,
+        obstacles: [],
+        lastSpawn: 0,
+        speed: 5,
+        groundY: canvas.height - 60,
+        gameOver: false,
+        highScore: parseInt(localStorage.getItem('pandaRunnerHigh') || '0'),
+        distance: 0
+    };
+    
+    overlay.classList.remove('visible');
+    requestAnimationFrame(pandaRunnerLoop);
+}
+
+function pandaRunnerLoop(timestamp) {
+    if (currentMode !== MODE_MINIGAME_RUNNER) return;
+    
+    const time = timestamp / 1000;
+    const data = miniGameData;
+    
+    if (data.gameOver) {
+        requestAnimationFrame(pandaRunnerLoop);
+        return;
+    }
+    
+    // Gravity and jumping
+    if (data.isJumping) {
+        data.pandaVelY += 0.8; // gravity
+        data.pandaY += data.pandaVelY;
+        
+        if (data.pandaY >= data.groundY) {
+            data.pandaY = data.groundY;
+            data.isJumping = false;
+            data.pandaVelY = 0;
+        }
+    }
+    
+    // Spawn obstacles
+    if (time - data.lastSpawn > 1.5 - Math.min(data.distance / 2000, 0.8)) {
+        const types = ['rock', 'cactus', 'bird'];
+        const type = types[Math.floor(Math.random() * types.length)];
+        data.obstacles.push({
+            x: canvas.width + 50,
+            y: type === 'bird' ? data.groundY - 60 - Math.random() * 40 : data.groundY,
+            type: type,
+            width: type === 'bird' ? 40 : 50,
+            height: type === 'bird' ? 30 : 50
+        });
+        data.lastSpawn = time;
+    }
+    
+    // Update obstacles
+    const currentSpeed = data.speed + data.distance / 500;
+    data.obstacles.forEach(obs => {
+        obs.x -= currentSpeed;
+    });
+    
+    // Remove off-screen obstacles and add score
+    for (let i = data.obstacles.length - 1; i >= 0; i--) {
+        if (data.obstacles[i].x < -50) {
+            data.obstacles.splice(i, 1);
+            miniGameScore += 10;
+        }
+    }
+    
+    // Collision detection
+    const pandaBox = { x: 80, y: data.pandaY - 50, width: 40, height: 50 };
+    for (const obs of data.obstacles) {
+        const obsBox = { x: obs.x, y: obs.y - obs.height, width: obs.width, height: obs.height };
+        if (pandaBox.x < obsBox.x + obsBox.width &&
+            pandaBox.x + pandaBox.width > obsBox.x &&
+            pandaBox.y < obsBox.y + obsBox.height &&
+            pandaBox.y + pandaBox.height > obsBox.y) {
+            data.gameOver = true;
+            endPandaRunner();
+            return;
+        }
+    }
+    
+    data.distance += currentSpeed;
+    miniGameScore = Math.floor(data.distance / 10);
+    
+    // Draw
+    // Sky gradient
+    const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    gradient.addColorStop(0, '#87CEEB');
+    gradient.addColorStop(0.7, '#E0F6FF');
+    gradient.addColorStop(1, '#98D982');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Clouds
+    ctx.fillStyle = 'rgba(255,255,255,0.8)';
+    for (let i = 0; i < 5; i++) {
+        const cloudX = ((i * 200 - data.distance * 0.2) % (canvas.width + 100)) - 50;
+        ctx.beginPath();
+        ctx.arc(cloudX, 80 + i * 20, 30, 0, Math.PI * 2);
+        ctx.arc(cloudX + 25, 85 + i * 20, 25, 0, Math.PI * 2);
+        ctx.arc(cloudX + 50, 80 + i * 20, 30, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    
+    // Ground
+    ctx.fillStyle = '#8B4513';
+    ctx.fillRect(0, data.groundY, canvas.width, 60);
+    ctx.fillStyle = '#228B22';
+    ctx.fillRect(0, data.groundY - 5, canvas.width, 10);
+    
+    // Draw obstacles
+    data.obstacles.forEach(obs => {
+        if (obs.type === 'rock') {
+            ctx.fillStyle = '#696969';
+            ctx.beginPath();
+            ctx.moveTo(obs.x, obs.y);
+            ctx.lineTo(obs.x + 25, obs.y - 50);
+            ctx.lineTo(obs.x + 50, obs.y);
+            ctx.fill();
+            ctx.fillStyle = '#808080';
+            ctx.beginPath();
+            ctx.moveTo(obs.x + 10, obs.y);
+            ctx.lineTo(obs.x + 25, obs.y - 35);
+            ctx.lineTo(obs.x + 40, obs.y);
+            ctx.fill();
+        } else if (obs.type === 'cactus') {
+            ctx.fillStyle = '#228B22';
+            ctx.fillRect(obs.x + 15, obs.y - 50, 20, 50);
+            ctx.fillRect(obs.x, obs.y - 35, 15, 10);
+            ctx.fillRect(obs.x + 35, obs.y - 40, 15, 10);
+            ctx.fillRect(obs.x, obs.y - 35, 10, -15);
+            ctx.fillRect(obs.x + 40, obs.y - 40, 10, -15);
+        } else if (obs.type === 'bird') {
+            ctx.fillStyle = '#4A4A4A';
+            const wingFlap = Math.sin(time * 15) * 10;
+            ctx.beginPath();
+            ctx.ellipse(obs.x + 20, obs.y, 20, 10, 0, 0, Math.PI * 2);
+            ctx.fill();
+            // Wings
+            ctx.beginPath();
+            ctx.moveTo(obs.x + 10, obs.y);
+            ctx.lineTo(obs.x, obs.y - 15 + wingFlap);
+            ctx.lineTo(obs.x + 20, obs.y);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.moveTo(obs.x + 30, obs.y);
+            ctx.lineTo(obs.x + 40, obs.y - 15 - wingFlap);
+            ctx.lineTo(obs.x + 20, obs.y);
+            ctx.fill();
+            // Beak
+            ctx.fillStyle = '#FFA500';
+            ctx.beginPath();
+            ctx.moveTo(obs.x + 40, obs.y);
+            ctx.lineTo(obs.x + 50, obs.y);
+            ctx.lineTo(obs.x + 40, obs.y + 5);
+            ctx.fill();
+        }
+    });
+    
+    // Draw running panda
+    drawRunningPanda(80, data.pandaY, time, data.isJumping);
+    
+    // UI
+    ctx.font = 'bold 28px sans-serif';
+    ctx.fillStyle = '#333';
+    ctx.textAlign = 'left';
+    ctx.fillText(`🏃 Score: ${miniGameScore}`, 20, 40);
+    ctx.textAlign = 'right';
+    ctx.fillText(`🏆 Best: ${data.highScore}`, canvas.width - 20, 40);
+    
+    ctx.font = 'bold 32px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#fbbf24';
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 3;
+    ctx.strokeText('🏃 PANDA RUN 🏃', canvas.width / 2, 45);
+    ctx.fillText('🏃 PANDA RUN 🏃', canvas.width / 2, 45);
+    
+    // Jump instruction
+    ctx.font = '16px sans-serif';
+    ctx.fillStyle = '#666';
+    ctx.fillText('Press SPACE or ↑ to jump!', canvas.width / 2, canvas.height - 20);
+    
+    requestAnimationFrame(pandaRunnerLoop);
+}
+
+function drawRunningPanda(x, y, time, isJumping) {
+    ctx.save();
+    ctx.translate(x, y);
+    
+    const legMove = isJumping ? 0 : Math.sin(time * 20) * 0.3;
+    
+    // Body
+    ctx.fillStyle = 'white';
+    ctx.beginPath();
+    ctx.ellipse(0, -25, 20, 25, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    
+    // Head
+    ctx.beginPath();
+    ctx.arc(15, -45, 18, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    
+    // Ears
+    ctx.fillStyle = 'black';
+    ctx.beginPath();
+    ctx.arc(5, -60, 8, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(25, -60, 8, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Eye patches
+    ctx.beginPath();
+    ctx.ellipse(10, -48, 6, 8, -0.2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(22, -48, 6, 8, 0.2, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Eyes
+    ctx.fillStyle = 'white';
+    ctx.beginPath();
+    ctx.arc(11, -48, 3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(21, -48, 3, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Legs running
+    ctx.fillStyle = 'black';
+    ctx.save();
+    ctx.translate(-10, 0);
+    ctx.rotate(legMove);
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 8, 12, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+    
+    ctx.save();
+    ctx.translate(10, 0);
+    ctx.rotate(-legMove);
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 8, 12, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+    
+    ctx.restore();
+}
+
+function handleRunnerKeys(key) {
+    if (key === 'Escape') {
+        endPandaRunner();
+        return;
+    }
+    if ((key === ' ' || key === 'ArrowUp' || key === 'w' || key === 'W') && !miniGameData.isJumping) {
+        miniGameData.isJumping = true;
+        miniGameData.pandaVelY = -15;
+    }
+}
+
+function endPandaRunner() {
+    const data = miniGameData;
+    if (miniGameScore > data.highScore) {
+        localStorage.setItem('pandaRunnerHigh', miniGameScore.toString());
+        data.highScore = miniGameScore;
+    }
+    
+    currentMode = MODE_PARTY_HUB;
+    
+    overlay.innerHTML = `
+        <h2 style="color: #fbbf24;">🏃 Panda Run Complete!</h2>
+        <p style="font-size: 2rem;">Score: ${miniGameScore}</p>
+        <p>🏆 Best: ${data.highScore}</p>
+        <div class="overlay-buttons">
+            <button class="game-btn secondary" id="backBtn">BACK (ESC)</button>
+            <button class="game-btn" id="retryMiniBtn">PLAY AGAIN (ENTER)</button>
+        </div>
+    `;
+    overlay.classList.add('visible');
+    overlay.style.background = '';
+    overlay.style.boxShadow = '';
+    
+    document.getElementById('backBtn').onclick = startPartyHub;
+    document.getElementById('retryMiniBtn').onclick = startPandaRunner;
+}
+
+// ==================== MINI GAME: BALLOON POP ====================
+function startBalloonPop() {
+    currentMode = MODE_MINIGAME_BALLOON;
+    miniGameScore = 0;
+    miniGameTimer = 30;
+    partyStartTime = performance.now() / 1000;
+    miniGameData = {
+        balloons: [],
+        lastSpawn: 0,
+        popped: 0,
+        missed: 0,
+        selectedBalloon: 0,
+        highScore: parseInt(localStorage.getItem('balloonPopHigh') || '0')
+    };
+    
+    overlay.classList.remove('visible');
+    requestAnimationFrame(balloonPopLoop);
+    
+    const timerInterval = setInterval(() => {
+        if (currentMode !== MODE_MINIGAME_BALLOON) {
+            clearInterval(timerInterval);
+            return;
+        }
+        miniGameTimer--;
+        if (miniGameTimer <= 0) {
+            clearInterval(timerInterval);
+            endBalloonPop();
+        }
+    }, 1000);
+}
+
+function balloonPopLoop(timestamp) {
+    if (currentMode !== MODE_MINIGAME_BALLOON) return;
+    
+    const time = timestamp / 1000;
+    const data = miniGameData;
+    
+    // Spawn balloons
+    if (time - data.lastSpawn > 0.6) {
+        const colors = ['#ff6b6b', '#ffd93d', '#6bcb77', '#4d96ff', '#ff6fff', '#a855f7'];
+        data.balloons.push({
+            x: Math.random() * (canvas.width - 100) + 50,
+            y: canvas.height + 50,
+            color: colors[Math.floor(Math.random() * colors.length)],
+            speed: Math.random() * 2 + 2,
+            size: Math.random() * 20 + 30,
+            wobble: Math.random() * Math.PI * 2,
+            points: Math.floor(Math.random() * 3 + 1) * 10 // 10, 20, or 30 points
+        });
+        data.lastSpawn = time;
+    }
+    
+    // Update balloons
+    data.balloons.forEach(b => {
+        b.y -= b.speed;
+        b.wobble += 0.1;
+        b.x += Math.sin(b.wobble) * 0.5;
+    });
+    
+    // Remove escaped balloons
+    for (let i = data.balloons.length - 1; i >= 0; i--) {
+        if (data.balloons[i].y < -60) {
+            data.balloons.splice(i, 1);
+            data.missed++;
+        }
+    }
+    
+    // Adjust selected balloon index
+    if (data.selectedBalloon >= data.balloons.length) {
+        data.selectedBalloon = Math.max(0, data.balloons.length - 1);
+    }
+    
+    // Draw
+    // Party background
+    const hue = (time * 20) % 360;
+    const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    gradient.addColorStop(0, `hsl(${hue}, 60%, 70%)`);
+    gradient.addColorStop(1, `hsl(${(hue + 60) % 360}, 60%, 50%)`);
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Draw balloons
+    data.balloons.forEach((b, index) => {
+        const isSelected = index === data.selectedBalloon;
+        
+        // String
+        ctx.strokeStyle = '#333';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(b.x, b.y + b.size);
+        ctx.quadraticCurveTo(b.x + Math.sin(b.wobble) * 10, b.y + b.size + 30, b.x, b.y + b.size + 50);
+        ctx.stroke();
+        
+        // Balloon
+        ctx.fillStyle = b.color;
+        ctx.beginPath();
+        ctx.ellipse(b.x, b.y, b.size * 0.8, b.size, 0, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Highlight
+        ctx.fillStyle = 'rgba(255,255,255,0.4)';
+        ctx.beginPath();
+        ctx.ellipse(b.x - b.size * 0.3, b.y - b.size * 0.3, b.size * 0.2, b.size * 0.3, -0.5, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Tie
+        ctx.fillStyle = b.color;
+        ctx.beginPath();
+        ctx.moveTo(b.x - 5, b.y + b.size);
+        ctx.lineTo(b.x + 5, b.y + b.size);
+        ctx.lineTo(b.x, b.y + b.size + 10);
+        ctx.fill();
+        
+        // Points indicator
+        ctx.font = 'bold 16px sans-serif';
+        ctx.fillStyle = '#fff';
+        ctx.textAlign = 'center';
+        ctx.fillText(`${b.points}`, b.x, b.y + 5);
+        
+        // Selection indicator
+        if (isSelected) {
+            ctx.strokeStyle = '#ffd700';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.arc(b.x, b.y, b.size + 10, 0, Math.PI * 2);
+            ctx.stroke();
+            
+            // Arrow pointing at selected balloon
+            ctx.fillStyle = '#ffd700';
+            ctx.font = 'bold 24px sans-serif';
+            ctx.fillText('👆', b.x, b.y + b.size + 80);
+        }
+    });
+    
+    // UI
+    ctx.font = 'bold 24px sans-serif';
+    ctx.fillStyle = '#fff';
+    ctx.textAlign = 'left';
+    ctx.fillText(`🎈 Score: ${miniGameScore}`, 20, 40);
+    ctx.fillText(`⏱️ Time: ${miniGameTimer}s`, 20, 70);
+    ctx.textAlign = 'right';
+    ctx.fillText(`🏆 Best: ${data.highScore}`, canvas.width - 20, 40);
+    ctx.fillText(`💨 Missed: ${data.missed}`, canvas.width - 20, 70);
+    
+    ctx.font = 'bold 32px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#fff';
+    ctx.strokeStyle = '#ef4444';
+    ctx.lineWidth = 3;
+    ctx.strokeText('🎈 BALLOON POP 🎈', canvas.width / 2, 45);
+    ctx.fillText('🎈 BALLOON POP 🎈', canvas.width / 2, 45);
+    
+    ctx.font = '16px sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,0.8)';
+    ctx.fillText('← → to select | SPACE to pop!', canvas.width / 2, canvas.height - 20);
+    
+    requestAnimationFrame(balloonPopLoop);
+}
+
+function handleBalloonKeys(key) {
+    if (key === 'Escape') {
+        endBalloonPop();
+        return;
+    }
+    
+    const data = miniGameData;
+    
+    if (key === 'ArrowLeft' || key === 'a' || key === 'A') {
+        data.selectedBalloon = Math.max(0, data.selectedBalloon - 1);
+    }
+    if (key === 'ArrowRight' || key === 'd' || key === 'D') {
+        data.selectedBalloon = Math.min(data.balloons.length - 1, data.selectedBalloon + 1);
+    }
+    if ((key === ' ' || key === 'Enter') && data.balloons.length > 0) {
+        // Pop the selected balloon!
+        const balloon = data.balloons[data.selectedBalloon];
+        if (balloon) {
+            miniGameScore += balloon.points;
+            data.popped++;
+            data.balloons.splice(data.selectedBalloon, 1);
+        }
+    }
+}
+
+function endBalloonPop() {
+    const data = miniGameData;
+    if (miniGameScore > data.highScore) {
+        localStorage.setItem('balloonPopHigh', miniGameScore.toString());
+        data.highScore = miniGameScore;
+    }
+    
+    currentMode = MODE_PARTY_HUB;
+    
+    overlay.innerHTML = `
+        <h2 style="color: #ef4444;">🎈 Balloon Pop Complete!</h2>
+        <p style="font-size: 2rem;">Score: ${miniGameScore}</p>
+        <p>🎈 Popped: ${data.popped} | 💨 Missed: ${data.missed}</p>
+        <p>🏆 Best: ${data.highScore}</p>
+        <div class="overlay-buttons">
+            <button class="game-btn secondary" id="backBtn">BACK (ESC)</button>
+            <button class="game-btn" id="retryMiniBtn">PLAY AGAIN (ENTER)</button>
+        </div>
+    `;
+    overlay.classList.add('visible');
+    overlay.style.background = '';
+    overlay.style.boxShadow = '';
+    
+    document.getElementById('backBtn').onclick = startPartyHub;
+    document.getElementById('retryMiniBtn').onclick = startBalloonPop;
+}
+
+// ==================== MINI GAME: PANDA PONG ====================
+function startPandaPong() {
+    currentMode = MODE_MINIGAME_PONG;
+    partyStartTime = performance.now() / 1000;
+    miniGameData = {
+        playerY: canvas.height / 2,
+        cpuY: canvas.height / 2,
+        ballX: canvas.width / 2,
+        ballY: canvas.height / 2,
+        ballVelX: 5,
+        ballVelY: 3,
+        playerScore: 0,
+        cpuScore: 0,
+        paddleHeight: 80,
+        paddleWidth: 15,
+        ballSize: 12,
+        winScore: 5,
+        gameOver: false
+    };
+    
+    overlay.classList.remove('visible');
+    requestAnimationFrame(pandaPongLoop);
+}
+
+function pandaPongLoop(timestamp) {
+    if (currentMode !== MODE_MINIGAME_PONG) return;
+    
+    const time = timestamp / 1000;
+    const data = miniGameData;
+    
+    if (data.gameOver) {
+        requestAnimationFrame(pandaPongLoop);
+        return;
+    }
+    
+    // Player movement
+    if (keysPressed.up) data.playerY -= 7;
+    if (keysPressed.down) data.playerY += 7;
+    data.playerY = Math.max(data.paddleHeight / 2, Math.min(canvas.height - data.paddleHeight / 2, data.playerY));
+    
+    // CPU AI
+    const cpuSpeed = 4;
+    if (data.ballY < data.cpuY - 20) {
+        data.cpuY -= cpuSpeed;
+    } else if (data.ballY > data.cpuY + 20) {
+        data.cpuY += cpuSpeed;
+    }
+    data.cpuY = Math.max(data.paddleHeight / 2, Math.min(canvas.height - data.paddleHeight / 2, data.cpuY));
+    
+    // Ball movement
+    data.ballX += data.ballVelX;
+    data.ballY += data.ballVelY;
+    
+    // Ball collision with top/bottom
+    if (data.ballY <= data.ballSize || data.ballY >= canvas.height - data.ballSize) {
+        data.ballVelY *= -1;
+    }
+    
+    // Ball collision with paddles
+    // Player paddle (left)
+    if (data.ballX <= 40 + data.paddleWidth && 
+        data.ballY >= data.playerY - data.paddleHeight / 2 && 
+        data.ballY <= data.playerY + data.paddleHeight / 2 &&
+        data.ballVelX < 0) {
+        data.ballVelX *= -1.1;
+        data.ballVelY += (data.ballY - data.playerY) * 0.1;
+    }
+    
+    // CPU paddle (right)
+    if (data.ballX >= canvas.width - 40 - data.paddleWidth && 
+        data.ballY >= data.cpuY - data.paddleHeight / 2 && 
+        data.ballY <= data.cpuY + data.paddleHeight / 2 &&
+        data.ballVelX > 0) {
+        data.ballVelX *= -1.1;
+        data.ballVelY += (data.ballY - data.cpuY) * 0.1;
+    }
+    
+    // Limit ball speed
+    const maxSpeed = 12;
+    data.ballVelX = Math.max(-maxSpeed, Math.min(maxSpeed, data.ballVelX));
+    data.ballVelY = Math.max(-maxSpeed, Math.min(maxSpeed, data.ballVelY));
+    
+    // Scoring
+    if (data.ballX < 0) {
+        data.cpuScore++;
+        resetPongBall(data, 1);
+    } else if (data.ballX > canvas.width) {
+        data.playerScore++;
+        resetPongBall(data, -1);
+    }
+    
+    // Check win
+    if (data.playerScore >= data.winScore || data.cpuScore >= data.winScore) {
+        data.gameOver = true;
+        endPandaPong();
+        return;
+    }
+    
+    // Draw
+    // Background
+    ctx.fillStyle = '#1a1a2e';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Center line
+    ctx.strokeStyle = '#444';
+    ctx.lineWidth = 4;
+    ctx.setLineDash([20, 15]);
+    ctx.beginPath();
+    ctx.moveTo(canvas.width / 2, 0);
+    ctx.lineTo(canvas.width / 2, canvas.height);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    
+    // Player paddle (panda themed)
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(30, data.playerY - data.paddleHeight / 2, data.paddleWidth, data.paddleHeight);
+    ctx.fillStyle = '#000';
+    ctx.fillRect(30, data.playerY - data.paddleHeight / 2, data.paddleWidth, 15);
+    ctx.fillRect(30, data.playerY + data.paddleHeight / 2 - 15, data.paddleWidth, 15);
+    
+    // CPU paddle
+    ctx.fillStyle = '#ff6b6b';
+    ctx.fillRect(canvas.width - 30 - data.paddleWidth, data.cpuY - data.paddleHeight / 2, data.paddleWidth, data.paddleHeight);
+    
+    // Ball (panda face!)
+    ctx.fillStyle = '#fff';
+    ctx.beginPath();
+    ctx.arc(data.ballX, data.ballY, data.ballSize, 0, Math.PI * 2);
+    ctx.fill();
+    // Ears
+    ctx.fillStyle = '#000';
+    ctx.beginPath();
+    ctx.arc(data.ballX - 8, data.ballY - 8, 4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(data.ballX + 8, data.ballY - 8, 4, 0, Math.PI * 2);
+    ctx.fill();
+    // Eyes
+    ctx.beginPath();
+    ctx.arc(data.ballX - 4, data.ballY - 2, 3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(data.ballX + 4, data.ballY - 2, 3, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Scores
+    ctx.font = 'bold 60px sans-serif';
+    ctx.fillStyle = '#4ade80';
+    ctx.textAlign = 'center';
+    ctx.fillText(data.playerScore, canvas.width / 4, 80);
+    ctx.fillStyle = '#ff6b6b';
+    ctx.fillText(data.cpuScore, canvas.width * 3 / 4, 80);
+    
+    // Labels
+    ctx.font = 'bold 20px sans-serif';
+    ctx.fillStyle = '#fff';
+    ctx.fillText('YOU', canvas.width / 4, 110);
+    ctx.fillText('CPU', canvas.width * 3 / 4, 110);
+    
+    // Title
+    ctx.font = 'bold 28px sans-serif';
+    ctx.fillStyle = '#8b5cf6';
+    ctx.fillText('🏓 PANDA PONG 🏓', canvas.width / 2, 40);
+    
+    // Instructions
+    ctx.font = '16px sans-serif';
+    ctx.fillStyle = '#888';
+    ctx.fillText(`First to ${data.winScore} wins! | ↑↓ to move`, canvas.width / 2, canvas.height - 20);
+    
+    requestAnimationFrame(pandaPongLoop);
+}
+
+function resetPongBall(data, direction) {
+    data.ballX = canvas.width / 2;
+    data.ballY = canvas.height / 2;
+    data.ballVelX = 5 * direction;
+    data.ballVelY = (Math.random() - 0.5) * 6;
+}
+
+function handlePongKeys(key) {
+    if (key === 'Escape') {
+        endPandaPong();
+        return;
+    }
+    // Movement handled in game loop via keysPressed
+}
+
+function endPandaPong() {
+    const data = miniGameData;
+    const playerWon = data.playerScore >= data.winScore;
+    
+    currentMode = MODE_PARTY_HUB;
+    
+    overlay.innerHTML = `
+        <h2 style="color: #8b5cf6;">🏓 Panda Pong Complete!</h2>
+        <p style="font-size: 2rem;">${playerWon ? '🎉 YOU WIN! 🎉' : '😢 CPU Wins'}</p>
+        <p style="font-size: 1.5rem;">You ${data.playerScore} - ${data.cpuScore} CPU</p>
+        <div class="overlay-buttons">
+            <button class="game-btn secondary" id="backBtn">BACK (ESC)</button>
+            <button class="game-btn" id="retryMiniBtn">PLAY AGAIN (ENTER)</button>
+        </div>
+    `;
+    overlay.classList.add('visible');
+    overlay.style.background = '';
+    overlay.style.boxShadow = '';
+    
+    document.getElementById('backBtn').onclick = startPartyHub;
+    document.getElementById('retryMiniBtn').onclick = startPandaPong;
 }
 
 function gameOver() {
