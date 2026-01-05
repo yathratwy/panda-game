@@ -37,7 +37,7 @@ const keysPressed = {
 const levels = [
     {
         id: 1, name: "Bamboo Forest", icon: "🎋",
-        x: 150, y: 280, unlocked: true, completed: false, stars: 0,
+        x: 100, y: 200, unlocked: true, completed: false, stars: 0,
         bambooGoal: 3, maxJaguars: 1, jaguarSpeed: 1.0, spawnInterval: 20000,
         theme: { bg1: '#c8e6c9', bg2: '#a5d6a7', bg3: '#81c784', grassColor: '#4a7c4f' },
         obstacles: [
@@ -49,7 +49,7 @@ const levels = [
     },
     {
         id: 2, name: "Mountain Peak", icon: "⛰️",
-        x: 300, y: 120, unlocked: false, completed: false, stars: 0,
+        x: 200, y: 100, unlocked: false, completed: false, stars: 0,
         bambooGoal: 4, maxJaguars: 1, jaguarSpeed: 1.2, spawnInterval: 18000,
         theme: { bg1: '#b0bec5', bg2: '#90a4ae', bg3: '#78909c', grassColor: '#607d8b' },
         obstacles: [
@@ -61,7 +61,7 @@ const levels = [
     },
     {
         id: 3, name: "Desert Oasis", icon: "🏜️",
-        x: 500, y: 350, unlocked: false, completed: false, stars: 0,
+        x: 350, y: 180, unlocked: false, completed: false, stars: 0,
         bambooGoal: 5, maxJaguars: 2, jaguarSpeed: 1.3, spawnInterval: 15000,
         theme: { bg1: '#ffe0b2', bg2: '#ffcc80', bg3: '#ffb74d', grassColor: '#8d6e63' },
         obstacles: [
@@ -72,7 +72,7 @@ const levels = [
     },
     {
         id: 4, name: "Snowy Tundra", icon: "❄️",
-        x: 650, y: 150, unlocked: false, completed: false, stars: 0,
+        x: 500, y: 100, unlocked: false, completed: false, stars: 0,
         bambooGoal: 6, maxJaguars: 2, jaguarSpeed: 1.2, spawnInterval: 15000,
         theme: { bg1: '#e3f2fd', bg2: '#bbdefb', bg3: '#90caf9', grassColor: '#b3e5fc' },
         obstacles: [
@@ -83,7 +83,7 @@ const levels = [
     },
     {
         id: 5, name: "Jungle Temple", icon: "🛕",
-        x: 400, y: 420, unlocked: false, completed: false, stars: 0,
+        x: 650, y: 180, unlocked: false, completed: false, stars: 0,
         bambooGoal: 7, maxJaguars: 2, jaguarSpeed: 1.5, spawnInterval: 12000,
         theme: { bg1: '#a5d6a7', bg2: '#81c784', bg3: '#66bb6a', grassColor: '#2e7d32' },
         obstacles: [
@@ -91,6 +91,62 @@ const levels = [
             { type: 'tree', x: 700, y: 200 }, { type: 'tree', x: 150, y: 400 },
             { type: 'tree', x: 650, y: 400 }, { type: 'rock', x: 200, y: 300 },
             { type: 'rock', x: 600, y: 300 }
+        ]
+    },
+    {
+        id: 6, name: "Saitra", icon: "🌸",
+        x: 150, y: 350, unlocked: false, completed: false, stars: 0,
+        bambooGoal: 5, maxJaguars: 1, jaguarSpeed: 1.3, spawnInterval: 16000,
+        theme: { bg1: '#fce4ec', bg2: '#f8bbd9', bg3: '#f48fb1', grassColor: '#ec407a' },
+        obstacles: [
+            { type: 'tree', x: 200, y: 150 }, { type: 'tree', x: 600, y: 150 },
+            { type: 'tree', x: 200, y: 350 }, { type: 'tree', x: 600, y: 350 },
+            { type: 'rock', x: 400, y: 150 }, { type: 'rock', x: 400, y: 350 }
+        ]
+    },
+    {
+        id: 7, name: "Sunset Beach", icon: "🌅",
+        x: 300, y: 400, unlocked: false, completed: false, stars: 0,
+        bambooGoal: 6, maxJaguars: 2, jaguarSpeed: 1.4, spawnInterval: 14000,
+        theme: { bg1: '#ffccbc', bg2: '#ffab91', bg3: '#ff8a65', grassColor: '#ff7043' },
+        obstacles: [
+            { type: 'rock', x: 150, y: 130 }, { type: 'rock', x: 650, y: 130 },
+            { type: 'tree', x: 300, y: 380 }, { type: 'tree', x: 500, y: 380 },
+            { type: 'bridge', x: 400, y: 200, width: 140, height: 30 }
+        ]
+    },
+    {
+        id: 8, name: "Mystic Cave", icon: "🦇",
+        x: 500, y: 320, unlocked: false, completed: false, stars: 0,
+        bambooGoal: 7, maxJaguars: 2, jaguarSpeed: 1.4, spawnInterval: 13000,
+        theme: { bg1: '#4a4a6a', bg2: '#3d3d5c', bg3: '#2d2d4a', grassColor: '#5c5c8a' },
+        obstacles: [
+            { type: 'rock', x: 200, y: 150 }, { type: 'rock', x: 600, y: 150 },
+            { type: 'rock', x: 200, y: 300 }, { type: 'rock', x: 600, y: 300 },
+            { type: 'rock', x: 400, y: 400 }
+        ]
+    },
+    {
+        id: 9, name: "Rainbow Valley", icon: "🌈",
+        x: 700, y: 350, unlocked: false, completed: false, stars: 0,
+        bambooGoal: 8, maxJaguars: 2, jaguarSpeed: 1.5, spawnInterval: 12000,
+        theme: { bg1: '#e1bee7', bg2: '#ce93d8', bg3: '#ba68c8', grassColor: '#9c27b0' },
+        obstacles: [
+            { type: 'tree', x: 150, y: 100 }, { type: 'tree', x: 650, y: 100 },
+            { type: 'tree', x: 150, y: 400 }, { type: 'tree', x: 650, y: 400 },
+            { type: 'rock', x: 300, y: 200 }, { type: 'rock', x: 500, y: 300 }
+        ]
+    },
+    {
+        id: 10, name: "Panda Paradise", icon: "🐼",
+        x: 400, y: 450, unlocked: false, completed: false, stars: 0,
+        bambooGoal: 10, maxJaguars: 2, jaguarSpeed: 1.6, spawnInterval: 10000,
+        theme: { bg1: '#b2dfdb', bg2: '#80cbc4', bg3: '#4db6ac', grassColor: '#26a69a' },
+        obstacles: [
+            { type: 'tree', x: 100, y: 150 }, { type: 'tree', x: 700, y: 150 },
+            { type: 'tree', x: 100, y: 350 }, { type: 'tree', x: 700, y: 350 },
+            { type: 'rock', x: 250, y: 250 }, { type: 'rock', x: 550, y: 250 },
+            { type: 'bridge', x: 400, y: 150, width: 120, height: 30 }
         ]
     }
 ];
@@ -451,35 +507,90 @@ function drawMap() {
     ctx.fillStyle = '#64b5f6';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Land
+    // Land - larger to fit more levels
     ctx.fillStyle = '#a5d6a7';
     ctx.beginPath();
-    ctx.ellipse(400, 300, 350, 220, 0, 0, Math.PI * 2);
+    ctx.ellipse(400, 280, 380, 250, 0, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Extra land area
+    ctx.fillStyle = '#81c784';
+    ctx.beginPath();
+    ctx.ellipse(200, 300, 150, 120, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(600, 280, 150, 130, 0, 0, Math.PI * 2);
     ctx.fill();
 
-    // Paths
+    // Paths between levels
     ctx.strokeStyle = '#8d6e63';
-    ctx.lineWidth = 4;
-    ctx.setLineDash([10, 5]);
+    ctx.lineWidth = 3;
+    ctx.setLineDash([8, 4]);
     
+    // Level 1 -> 2
     ctx.beginPath();
     ctx.moveTo(levels[0].x, levels[0].y);
     ctx.lineTo(levels[1].x, levels[1].y);
     ctx.stroke();
     
+    // Level 2 -> 3
     ctx.beginPath();
     ctx.moveTo(levels[1].x, levels[1].y);
     ctx.lineTo(levels[2].x, levels[2].y);
     ctx.stroke();
     
+    // Level 3 -> 4
     ctx.beginPath();
-    ctx.moveTo(levels[1].x, levels[1].y);
+    ctx.moveTo(levels[2].x, levels[2].y);
     ctx.lineTo(levels[3].x, levels[3].y);
     ctx.stroke();
     
+    // Level 4 -> 5
     ctx.beginPath();
-    ctx.moveTo(levels[2].x, levels[2].y);
+    ctx.moveTo(levels[3].x, levels[3].y);
     ctx.lineTo(levels[4].x, levels[4].y);
+    ctx.stroke();
+    
+    // Level 1 -> 6 (Saitra)
+    ctx.beginPath();
+    ctx.moveTo(levels[0].x, levels[0].y);
+    ctx.lineTo(levels[5].x, levels[5].y);
+    ctx.stroke();
+    
+    // Level 6 -> 7
+    ctx.beginPath();
+    ctx.moveTo(levels[5].x, levels[5].y);
+    ctx.lineTo(levels[6].x, levels[6].y);
+    ctx.stroke();
+    
+    // Level 7 -> 8
+    ctx.beginPath();
+    ctx.moveTo(levels[6].x, levels[6].y);
+    ctx.lineTo(levels[7].x, levels[7].y);
+    ctx.stroke();
+    
+    // Level 5 -> 8
+    ctx.beginPath();
+    ctx.moveTo(levels[4].x, levels[4].y);
+    ctx.lineTo(levels[7].x, levels[7].y);
+    ctx.stroke();
+    
+    // Level 8 -> 9
+    ctx.beginPath();
+    ctx.moveTo(levels[7].x, levels[7].y);
+    ctx.lineTo(levels[8].x, levels[8].y);
+    ctx.stroke();
+    
+    // Level 9 -> 10
+    ctx.beginPath();
+    ctx.moveTo(levels[8].x, levels[8].y);
+    ctx.lineTo(levels[9].x, levels[9].y);
+    ctx.stroke();
+    
+    // Level 7 -> 10
+    ctx.beginPath();
+    ctx.moveTo(levels[6].x, levels[6].y);
+    ctx.lineTo(levels[9].x, levels[9].y);
     ctx.stroke();
 
     ctx.setLineDash([]);
