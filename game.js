@@ -20,6 +20,8 @@ let currentMode = MODE_MAP;
 // Party/Confetti system
 let confetti = [];
 let partyStartTime = 0;
+let levelPartyActive = false;
+let levelPartyStars = 0;
 
 // Game state
 let gameRunning = false;
@@ -910,13 +912,248 @@ function levelComplete() {
     const allCompleted = levels.every(lvl => lvl.completed);
     
     if (allCompleted) {
-        // PARTY TIME! 🎉
+        // BIG PARTY TIME! 🎉
         startParty();
         return;
     }
 
+    // Start mini level party celebration!
+    startLevelParty(stars);
+}
+
+function startLevelParty(stars) {
+    levelPartyActive = true;
+    levelPartyStars = stars;
+    partyStartTime = performance.now() / 1000;
+    confetti = [];
+    
+    // Create confetti burst
+    createLevelConfetti();
+    
+    // Hide overlay during party
+    overlay.classList.remove('visible');
+    
+    // Run the level party animation
+    requestAnimationFrame(levelPartyLoop);
+    
+    // After 3 seconds, show the level complete overlay
+    setTimeout(() => {
+        levelPartyActive = false;
+        confetti = [];
+        showLevelCompleteOverlay();
+    }, 3000);
+}
+
+function createLevelConfetti() {
+    const colors = ['#ff6b6b', '#ffd93d', '#6bcb77', '#4d96ff', '#ff6fff', '#a855f7', '#22d3ee', '#fb923c'];
+    const shapes = ['circle', 'square', 'star'];
+    
+    // Create confetti bursting from center
+    for (let i = 0; i < 80; i++) {
+        const angle = (Math.PI * 2 * i) / 80;
+        const speed = Math.random() * 8 + 4;
+        confetti.push({
+            x: canvas.width / 2,
+            y: canvas.height / 2,
+            size: Math.random() * 10 + 5,
+            color: colors[Math.floor(Math.random() * colors.length)],
+            shape: shapes[Math.floor(Math.random() * shapes.length)],
+            speedY: Math.sin(angle) * speed - 2,
+            speedX: Math.cos(angle) * speed,
+            rotation: Math.random() * 360,
+            rotationSpeed: (Math.random() - 0.5) * 15,
+            gravity: 0.15,
+            life: 1
+        });
+    }
+}
+
+function levelPartyLoop(timestamp) {
+    if (!levelPartyActive) return;
+    
+    const time = timestamp / 1000 - partyStartTime;
+    const level = levels[currentLevelIndex];
+    
+    // Draw game background (keep the level visible)
+    const theme = level.theme;
+    const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    gradient.addColorStop(0, theme.bg1);
+    gradient.addColorStop(1, theme.bg3);
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Draw grass
+    ctx.fillStyle = theme.grassColor;
+    grass.forEach(g => {
+        ctx.beginPath();
+        ctx.moveTo(g.x, g.y);
+        ctx.lineTo(g.x - 3, g.y - 15);
+        ctx.lineTo(g.x + 3, g.y - 15);
+        ctx.fill();
+    });
+    
+    // Draw obstacles
+    obstacles.forEach(obs => {
+        if (obs.type === 'tree') drawTree(obs.x, obs.y);
+        else if (obs.type === 'rock') drawRock(obs.x, obs.y);
+        else if (obs.type === 'bridge') drawBridge(obs.x, obs.y, obs.width, obs.height);
+    });
+    
+    // Draw celebrating panda in center
+    drawCelebratingPanda(panda.x, panda.y, time);
+    
+    // Update and draw confetti
+    confetti.forEach(piece => {
+        piece.x += piece.speedX;
+        piece.y += piece.speedY;
+        piece.speedY += piece.gravity;
+        piece.speedX *= 0.99;
+        piece.rotation += piece.rotationSpeed;
+        piece.life -= 0.008;
+        
+        if (piece.life > 0) {
+            ctx.save();
+            ctx.globalAlpha = piece.life;
+            ctx.translate(piece.x, piece.y);
+            ctx.rotate(piece.rotation * Math.PI / 180);
+            ctx.fillStyle = piece.color;
+            
+            if (piece.shape === 'circle') {
+                ctx.beginPath();
+                ctx.arc(0, 0, piece.size / 2, 0, Math.PI * 2);
+                ctx.fill();
+            } else if (piece.shape === 'square') {
+                ctx.fillRect(-piece.size / 2, -piece.size / 2, piece.size, piece.size);
+            } else if (piece.shape === 'star') {
+                drawStar(0, 0, 5, piece.size / 2, piece.size / 4);
+            }
+            ctx.restore();
+        }
+    });
+    
+    // Draw celebration text
+    const bounce = Math.sin(time * 8) * 5;
+    ctx.save();
+    ctx.shadowColor = '#ffd700';
+    ctx.shadowBlur = 20;
+    ctx.font = 'bold 42px "Fredoka One", cursive, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#fff';
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 4;
+    ctx.strokeText('🎉 AWESOME! 🎉', canvas.width / 2, 80 + bounce);
+    ctx.fillText('🎉 AWESOME! 🎉', canvas.width / 2, 80 + bounce);
+    
+    // Draw stars earned
+    let starsText = '';
+    for (let i = 0; i < 3; i++) starsText += i < levelPartyStars ? '⭐' : '☆';
+    ctx.font = 'bold 48px sans-serif';
+    ctx.fillText(starsText, canvas.width / 2, 140 + bounce);
+    ctx.restore();
+    
+    // Level name
+    ctx.font = 'bold 24px sans-serif';
+    ctx.fillStyle = '#fff';
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 3;
+    ctx.strokeText(`${level.icon} ${level.name} Complete!`, canvas.width / 2, canvas.height - 60);
+    ctx.fillText(`${level.icon} ${level.name} Complete!`, canvas.width / 2, canvas.height - 60);
+    
+    requestAnimationFrame(levelPartyLoop);
+}
+
+function drawCelebratingPanda(x, y, time) {
+    ctx.save();
+    
+    // Jumping animation
+    const jump = Math.abs(Math.sin(time * 6)) * 20;
+    ctx.translate(x, y - jump);
+    
+    // Body
+    ctx.fillStyle = 'white';
+    ctx.beginPath();
+    ctx.ellipse(0, 10, 18, 22, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    
+    // Head
+    ctx.beginPath();
+    ctx.arc(0, -15, 18, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    
+    // Ears
+    ctx.fillStyle = 'black';
+    ctx.beginPath();
+    ctx.arc(-14, -28, 8, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(14, -28, 8, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Eye patches
+    ctx.beginPath();
+    ctx.ellipse(-8, -18, 7, 9, -0.3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(8, -18, 7, 9, 0.3, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Happy closed eyes
+    ctx.strokeStyle = 'white';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(-8, -17, 4, 0.2 * Math.PI, 0.8 * Math.PI);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(8, -17, 4, 0.2 * Math.PI, 0.8 * Math.PI);
+    ctx.stroke();
+    
+    // Big smile
+    ctx.strokeStyle = 'black';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(0, -8, 8, 0.1 * Math.PI, 0.9 * Math.PI);
+    ctx.stroke();
+    
+    // Arms up in celebration!
+    const armWave = Math.sin(time * 12) * 0.3;
+    ctx.fillStyle = 'black';
+    
+    // Left arm up
+    ctx.save();
+    ctx.translate(-18, 0);
+    ctx.rotate(-1.2 + armWave);
+    ctx.beginPath();
+    ctx.ellipse(0, -12, 6, 14, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+    
+    // Right arm up
+    ctx.save();
+    ctx.translate(18, 0);
+    ctx.rotate(1.2 - armWave);
+    ctx.beginPath();
+    ctx.ellipse(0, -12, 6, 14, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+    
+    // Legs
+    ctx.beginPath();
+    ctx.ellipse(-10, 28, 8, 10, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(10, 28, 8, 10, 0, 0, Math.PI * 2);
+    ctx.fill();
+    
+    ctx.restore();
+}
+
+function showLevelCompleteOverlay() {
     let starsDisplay = '';
-    for (let i = 0; i < 3; i++) starsDisplay += i < stars ? '⭐' : '☆';
+    for (let i = 0; i < 3; i++) starsDisplay += i < levelPartyStars ? '⭐' : '☆';
 
     overlay.innerHTML = `
         <h2 class="success">Level Complete!</h2>
