@@ -24,6 +24,8 @@ const MODE_MINIGAME_BALLOON = 'minigame_balloon';
 const MODE_MINIGAME_PONG = 'minigame_pong';
 const MODE_MINIGAME_WHACK = 'minigame_whack';
 const MODE_MINIGAME_STACK = 'minigame_stack';
+const MODE_MINIGAME_CAKE = 'minigame_cake';
+const MODE_MINIGAME_DANCEFLOOR = 'minigame_dancefloor';
 let currentMode = MODE_MAP;
 
 // Party/Confetti system
@@ -301,6 +303,16 @@ function handleKeyDown(e) {
         return;
     }
     
+    if (currentMode === MODE_MINIGAME_CAKE) {
+        handleCakeKeys(key);
+        return;
+    }
+    
+    if (currentMode === MODE_MINIGAME_DANCEFLOOR) {
+        handleDanceFloorKeys(key);
+        return;
+    }
+    
     if (overlay.classList.contains('visible')) {
         handleOverlayKeys(key);
     } else if (currentMode === MODE_MAP) {
@@ -396,8 +408,8 @@ function handlePartyHubKeys(key) {
         return;
     }
     
-    // Navigation for 4x2 grid layout
-    const cols = 4;
+    // Navigation for 5x2 grid layout
+    const cols = 5;
     if (key === 'ArrowLeft' || key === 'a' || key === 'A') {
         selectedMiniGame = (selectedMiniGame - 1 + miniGames.length) % miniGames.length;
     }
@@ -449,6 +461,14 @@ function handlePartyHubKeys(key) {
         selectedMiniGame = 7;
         launchSelectedMiniGame();
     }
+    if (key === '9') {
+        selectedMiniGame = 8;
+        launchSelectedMiniGame();
+    }
+    if (key === '0') {
+        selectedMiniGame = 9;
+        launchSelectedMiniGame();
+    }
     if (key === 'Escape' || key === 'm' || key === 'M') {
         exitParty();
     }
@@ -464,6 +484,8 @@ function launchSelectedMiniGame() {
         case 5: startPandaPong(); break;
         case 6: startWhackAJaguar(); break;
         case 7: startPandaStack(); break;
+        case 8: startCakeMaker(); break;
+        case 9: startDanceFloor(); break;
     }
 }
 
@@ -1721,7 +1743,9 @@ const miniGames = [
     { id: 'balloon', name: 'Balloon Pop', icon: '🎈', desc: 'Pop the balloons!', color: '#ef4444' },
     { id: 'pong', name: 'Panda Pong', icon: '🏓', desc: 'Beat the computer!', color: '#8b5cf6' },
     { id: 'whack', name: 'Whack-a-Jaguar', icon: '🔨', desc: 'Bonk the jaguars!', color: '#f97316' },
-    { id: 'stack', name: 'Panda Stack', icon: '🐼', desc: 'Stack the pandas!', color: '#10b981' }
+    { id: 'stack', name: 'Panda Stack', icon: '🐼', desc: 'Stack the pandas!', color: '#10b981' },
+    { id: 'cake', name: 'Cake Maker', icon: '🎂', desc: 'Decorate a cake!', color: '#ec4899' },
+    { id: 'dancefloor', name: 'Dance Floor', icon: '🕺', desc: 'Control the party!', color: '#06b6d4' }
 ];
 
 function startPartyHub() {
@@ -1759,16 +1783,16 @@ function partyHubLoop(timestamp) {
     ctx.fillStyle = '#ffd700';
     ctx.fillText('Choose a mini-game to play!', canvas.width / 2, 110);
     
-    // Draw mini-game cards in 2 rows (4 on top, 3 on bottom)
-    const cardWidth = 130;
-    const cardHeight = 140;
-    const gap = 15;
-    const startY = 125;
-    const rowGap = 15;
+    // Draw mini-game cards in 2 rows of 5
+    const cardWidth = 120;
+    const cardHeight = 130;
+    const gap = 12;
+    const startY = 120;
+    const rowGap = 12;
     
     miniGames.forEach((game, index) => {
-        // 4x2 grid layout
-        const cols = 4;
+        // 5x2 grid layout for 10 games
+        const cols = 5;
         const row = Math.floor(index / cols);
         const col = index % cols;
         const totalRowWidth = cols * cardWidth + (cols - 1) * gap;
@@ -3969,6 +3993,665 @@ function endPandaStack() {
     
     document.getElementById('backBtn').onclick = startPartyHub;
     document.getElementById('retryMiniBtn').onclick = startPandaStack;
+}
+
+// ==================== MINI GAME: CAKE MAKER ====================
+function startCakeMaker() {
+    currentMode = MODE_MINIGAME_CAKE;
+    partyStartTime = performance.now() / 1000;
+    
+    miniGameData = {
+        cakeLayers: 3,
+        frostingColor: '#ff9ecf',
+        decorations: [],
+        selectedTool: 0,
+        cursorX: canvas.width / 2,
+        cursorY: canvas.height / 2,
+        tools: [
+            { name: 'Frosting', icon: '🎨', colors: ['#ff9ecf', '#a8e6cf', '#ffd93d', '#a8d8ea', '#ffaaa5'] },
+            { name: 'Sprinkles', icon: '✨' },
+            { name: 'Candles', icon: '🕯️' },
+            { name: 'Strawberry', icon: '🍓' },
+            { name: 'Cherry', icon: '🍒' },
+            { name: 'Star', icon: '⭐' },
+            { name: 'Heart', icon: '❤️' },
+            { name: 'Flower', icon: '🌸' }
+        ],
+        colorIndex: 0,
+        cakeDecorated: false
+    };
+    
+    overlay.classList.remove('visible');
+    requestAnimationFrame(cakeMakerLoop);
+}
+
+function cakeMakerLoop(timestamp) {
+    if (currentMode !== MODE_MINIGAME_CAKE) return;
+    
+    const time = timestamp / 1000 - partyStartTime;
+    const data = miniGameData;
+    
+    // Move cursor with keys
+    if (keysPressed.left) data.cursorX -= 5;
+    if (keysPressed.right) data.cursorX += 5;
+    if (keysPressed.up) data.cursorY -= 5;
+    if (keysPressed.down) data.cursorY += 5;
+    data.cursorX = Math.max(50, Math.min(canvas.width - 50, data.cursorX));
+    data.cursorY = Math.max(100, Math.min(canvas.height - 100, data.cursorY));
+    
+    // Draw
+    // Kitchen background
+    const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    gradient.addColorStop(0, '#fff5e6');
+    gradient.addColorStop(1, '#ffe4c4');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Checkered floor pattern
+    for (let i = 0; i < 16; i++) {
+        for (let j = 0; j < 2; j++) {
+            ctx.fillStyle = (i + j) % 2 === 0 ? '#ddd' : '#fff';
+            ctx.fillRect(i * 50, canvas.height - 80 + j * 40, 50, 40);
+        }
+    }
+    
+    // Table
+    ctx.fillStyle = '#8B4513';
+    ctx.fillRect(100, canvas.height - 100, canvas.width - 200, 20);
+    
+    // Draw cake
+    drawDecorativeCake(canvas.width / 2, canvas.height - 180, data);
+    
+    // Draw decorations
+    data.decorations.forEach(dec => {
+        ctx.font = `${dec.size || 24}px sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.fillText(dec.icon, dec.x, dec.y);
+    });
+    
+    // Tool panel on left
+    ctx.fillStyle = 'rgba(255,255,255,0.9)';
+    ctx.fillRect(10, 80, 80, 320);
+    ctx.strokeStyle = '#ec4899';
+    ctx.lineWidth = 3;
+    ctx.strokeRect(10, 80, 80, 320);
+    
+    data.tools.forEach((tool, index) => {
+        const toolY = 100 + index * 38;
+        const isSelected = index === data.selectedTool;
+        
+        if (isSelected) {
+            ctx.fillStyle = '#fce7f3';
+            ctx.fillRect(15, toolY - 15, 70, 35);
+        }
+        
+        ctx.font = '24px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(tool.icon, 50, toolY + 8);
+        
+        if (isSelected) {
+            ctx.strokeStyle = '#ec4899';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(15, toolY - 15, 70, 35);
+        }
+    });
+    
+    // Color picker for frosting
+    if (data.selectedTool === 0) {
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(canvas.width - 90, 80, 80, 150);
+        ctx.strokeStyle = '#ec4899';
+        ctx.strokeRect(canvas.width - 90, 80, 80, 150);
+        
+        data.tools[0].colors.forEach((color, i) => {
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.arc(canvas.width - 50, 105 + i * 28, 12, 0, Math.PI * 2);
+            ctx.fill();
+            if (i === data.colorIndex) {
+                ctx.strokeStyle = '#333';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+            }
+        });
+    }
+    
+    // Cursor
+    const tool = data.tools[data.selectedTool];
+    ctx.font = '32px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(tool.icon, data.cursorX, data.cursorY);
+    
+    // Title
+    ctx.font = 'bold 32px sans-serif';
+    ctx.fillStyle = '#ec4899';
+    ctx.textAlign = 'center';
+    ctx.fillText('🎂 CAKE MAKER 🎂', canvas.width / 2, 45);
+    
+    // Instructions
+    ctx.font = '14px sans-serif';
+    ctx.fillStyle = '#666';
+    ctx.fillText('↑↓ select tool | ←→ change color | SPACE to place | ENTER when done!', canvas.width / 2, canvas.height - 20);
+    
+    // Decorations count
+    ctx.font = 'bold 18px sans-serif';
+    ctx.fillStyle = '#ec4899';
+    ctx.textAlign = 'right';
+    ctx.fillText(`Decorations: ${data.decorations.length}`, canvas.width - 20, 60);
+    
+    requestAnimationFrame(cakeMakerLoop);
+}
+
+function drawDecorativeCake(x, y, data) {
+    // Cake plate
+    ctx.fillStyle = '#fff';
+    ctx.beginPath();
+    ctx.ellipse(x, y + 90, 140, 20, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#ddd';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    
+    // Bottom layer
+    ctx.fillStyle = '#f5deb3';
+    ctx.fillRect(x - 100, y + 20, 200, 60);
+    ctx.fillStyle = data.frostingColor;
+    ctx.fillRect(x - 105, y + 15, 210, 15);
+    
+    // Middle layer
+    ctx.fillStyle = '#f5deb3';
+    ctx.fillRect(x - 75, y - 30, 150, 50);
+    ctx.fillStyle = data.frostingColor;
+    ctx.fillRect(x - 80, y - 35, 160, 12);
+    
+    // Top layer
+    ctx.fillStyle = '#f5deb3';
+    ctx.fillRect(x - 50, y - 70, 100, 40);
+    ctx.fillStyle = data.frostingColor;
+    ctx.fillRect(x - 55, y - 75, 110, 12);
+    
+    // Frosting drips
+    for (let i = 0; i < 8; i++) {
+        const dripX = x - 90 + i * 25;
+        ctx.fillStyle = data.frostingColor;
+        ctx.beginPath();
+        ctx.ellipse(dripX, y + 20, 8, 15 + Math.sin(i) * 5, 0, 0, Math.PI * 2);
+        ctx.fill();
+    }
+}
+
+function handleCakeKeys(key) {
+    if (key === 'Escape') {
+        endCakeMaker();
+        return;
+    }
+    
+    const data = miniGameData;
+    
+    // Tool selection
+    if (key === 'ArrowUp' || key === 'w' || key === 'W') {
+        if (!keysPressed.up) { // Only on key press, not hold
+            data.selectedTool = (data.selectedTool - 1 + data.tools.length) % data.tools.length;
+        }
+    }
+    if (key === 'ArrowDown' || key === 's' || key === 'S') {
+        if (!keysPressed.down) {
+            data.selectedTool = (data.selectedTool + 1) % data.tools.length;
+        }
+    }
+    
+    // Color selection for frosting
+    if (data.selectedTool === 0) {
+        if (key === 'ArrowLeft' || key === 'a' || key === 'A') {
+            data.colorIndex = (data.colorIndex - 1 + data.tools[0].colors.length) % data.tools[0].colors.length;
+            data.frostingColor = data.tools[0].colors[data.colorIndex];
+        }
+        if (key === 'ArrowRight' || key === 'd' || key === 'D') {
+            data.colorIndex = (data.colorIndex + 1) % data.tools[0].colors.length;
+            data.frostingColor = data.tools[0].colors[data.colorIndex];
+        }
+    }
+    
+    // Place decoration
+    if (key === ' ') {
+        const tool = data.tools[data.selectedTool];
+        if (data.selectedTool === 1) {
+            // Sprinkles - add multiple small ones
+            for (let i = 0; i < 5; i++) {
+                data.decorations.push({
+                    x: data.cursorX + (Math.random() - 0.5) * 30,
+                    y: data.cursorY + (Math.random() - 0.5) * 30,
+                    icon: ['✨', '•', '★'][Math.floor(Math.random() * 3)],
+                    size: 12 + Math.random() * 8
+                });
+            }
+        } else if (data.selectedTool > 1) {
+            data.decorations.push({
+                x: data.cursorX,
+                y: data.cursorY,
+                icon: tool.icon,
+                size: 28
+            });
+        }
+    }
+    
+    // Finish cake
+    if (key === 'Enter') {
+        data.cakeDecorated = true;
+        endCakeMaker();
+    }
+}
+
+function endCakeMaker() {
+    const data = miniGameData;
+    
+    currentMode = MODE_PARTY_HUB;
+    
+    const decorCount = data.decorations.length;
+    let rating = decorCount < 5 ? '⭐' : (decorCount < 15 ? '⭐⭐' : '⭐⭐⭐');
+    
+    overlay.innerHTML = `
+        <h2 style="color: #ec4899;">🎂 Cake Complete!</h2>
+        <p style="font-size: 2rem;">${rating}</p>
+        <p>🎨 Decorations added: ${decorCount}</p>
+        <p>${decorCount >= 15 ? '🌟 Beautiful cake!' : decorCount >= 5 ? '✨ Nice cake!' : '🎂 Simple but sweet!'}</p>
+        <div class="overlay-buttons">
+            <button class="game-btn secondary" id="backBtn">BACK (ESC)</button>
+            <button class="game-btn" id="retryMiniBtn">MAKE ANOTHER (ENTER)</button>
+        </div>
+    `;
+    overlay.classList.add('visible');
+    overlay.style.background = '';
+    overlay.style.boxShadow = '';
+    
+    document.getElementById('backBtn').onclick = startPartyHub;
+    document.getElementById('retryMiniBtn').onclick = startCakeMaker;
+}
+
+// ==================== MINI GAME: DANCE FLOOR ====================
+function startDanceFloor() {
+    currentMode = MODE_MINIGAME_DANCEFLOOR;
+    miniGameScore = 0;
+    miniGameTimer = 45;
+    partyStartTime = performance.now() / 1000;
+    
+    miniGameData = {
+        pandaX: canvas.width / 2,
+        pandaY: canvas.height / 2,
+        pandaDirection: 0, // 0=down, 1=left, 2=up, 3=right
+        dancing: false,
+        danceMove: 0,
+        stars: [],
+        lastStarSpawn: 0,
+        collected: 0,
+        otherDancers: [
+            { x: 150, y: 200, color: '#ff6b6b', phase: 0 },
+            { x: 650, y: 200, color: '#4ecdc4', phase: 1 },
+            { x: 150, y: 350, color: '#ffd93d', phase: 2 },
+            { x: 650, y: 350, color: '#95e1d3', phase: 3 }
+        ],
+        highScore: parseInt(localStorage.getItem('danceFloorHigh') || '0'),
+        combo: 0,
+        floorHue: 0
+    };
+    
+    overlay.classList.remove('visible');
+    requestAnimationFrame(danceFloorLoop);
+    
+    const timerInterval = setInterval(() => {
+        if (currentMode !== MODE_MINIGAME_DANCEFLOOR) {
+            clearInterval(timerInterval);
+            return;
+        }
+        miniGameTimer--;
+        if (miniGameTimer <= 0) {
+            clearInterval(timerInterval);
+            endDanceFloor();
+        }
+    }, 1000);
+}
+
+function danceFloorLoop(timestamp) {
+    if (currentMode !== MODE_MINIGAME_DANCEFLOOR) return;
+    
+    const time = timestamp / 1000 - partyStartTime;
+    const data = miniGameData;
+    
+    // Move panda
+    let moving = false;
+    if (keysPressed.left) { data.pandaX -= 5; data.pandaDirection = 1; moving = true; }
+    if (keysPressed.right) { data.pandaX += 5; data.pandaDirection = 3; moving = true; }
+    if (keysPressed.up) { data.pandaY -= 5; data.pandaDirection = 2; moving = true; }
+    if (keysPressed.down) { data.pandaY += 5; data.pandaDirection = 0; moving = true; }
+    
+    data.pandaX = Math.max(50, Math.min(canvas.width - 50, data.pandaX));
+    data.pandaY = Math.max(100, Math.min(canvas.height - 80, data.pandaY));
+    
+    data.dancing = moving;
+    if (moving) data.danceMove = time;
+    
+    // Spawn stars
+    if (time - data.lastStarSpawn > 1) {
+        data.stars.push({
+            x: 100 + Math.random() * (canvas.width - 200),
+            y: 120 + Math.random() * (canvas.height - 220),
+            rotation: 0,
+            collected: false
+        });
+        data.lastStarSpawn = time;
+    }
+    
+    // Collect stars
+    for (let i = data.stars.length - 1; i >= 0; i--) {
+        const star = data.stars[i];
+        const dx = data.pandaX - star.x;
+        const dy = data.pandaY - star.y;
+        if (Math.sqrt(dx*dx + dy*dy) < 40) {
+            data.stars.splice(i, 1);
+            data.collected++;
+            data.combo++;
+            miniGameScore += 10 * data.combo;
+        }
+        star.rotation += 0.1;
+    }
+    
+    // Decay combo if not moving
+    if (!moving && data.combo > 0) {
+        data.combo = Math.max(0, data.combo - 0.02);
+    }
+    
+    // Update floor color
+    data.floorHue = (data.floorHue + 1) % 360;
+    
+    // Draw
+    // Disco floor
+    const tileSize = 60;
+    for (let i = 0; i < Math.ceil(canvas.width / tileSize); i++) {
+        for (let j = 0; j < Math.ceil(canvas.height / tileSize); j++) {
+            const hue = (data.floorHue + i * 20 + j * 30 + Math.sin(time * 2 + i + j) * 30) % 360;
+            ctx.fillStyle = `hsl(${hue}, 70%, ${30 + Math.sin(time * 3 + i * j) * 10}%)`;
+            ctx.fillRect(i * tileSize, j * tileSize, tileSize - 2, tileSize - 2);
+        }
+    }
+    
+    // Disco ball reflection
+    for (let i = 0; i < 10; i++) {
+        const spotX = (Math.sin(time * 2 + i) * 0.5 + 0.5) * canvas.width;
+        const spotY = (Math.cos(time * 1.5 + i * 0.7) * 0.5 + 0.5) * canvas.height;
+        ctx.fillStyle = `rgba(255, 255, 255, ${0.3 + Math.sin(time * 5 + i) * 0.2})`;
+        ctx.beginPath();
+        ctx.arc(spotX, spotY, 30 + Math.sin(time * 3 + i) * 10, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    
+    // Draw stars
+    data.stars.forEach(star => {
+        ctx.save();
+        ctx.translate(star.x, star.y);
+        ctx.rotate(star.rotation);
+        ctx.font = '30px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('⭐', 0, 10);
+        ctx.restore();
+    });
+    
+    // Draw other dancers
+    data.otherDancers.forEach((dancer, i) => {
+        drawDancingCharacter(dancer.x, dancer.y, dancer.color, time + dancer.phase);
+    });
+    
+    // Draw player panda
+    drawDancingPanda(data.pandaX, data.pandaY, time, data.dancing, data.pandaDirection);
+    
+    // UI panel
+    ctx.fillStyle = 'rgba(0,0,0,0.7)';
+    ctx.fillRect(0, 0, canvas.width, 70);
+    
+    ctx.font = 'bold 24px sans-serif';
+    ctx.fillStyle = '#fff';
+    ctx.textAlign = 'left';
+    ctx.fillText(`⭐ ${miniGameScore}`, 20, 35);
+    ctx.fillText(`🔥 x${Math.floor(data.combo)}`, 20, 60);
+    
+    ctx.textAlign = 'center';
+    ctx.font = 'bold 28px sans-serif';
+    ctx.fillStyle = '#fff';
+    ctx.fillText('🕺 DANCE FLOOR 🕺', canvas.width / 2, 40);
+    
+    ctx.textAlign = 'right';
+    ctx.font = 'bold 24px sans-serif';
+    ctx.fillText(`⏱️ ${miniGameTimer}s`, canvas.width - 20, 35);
+    ctx.fillText(`🏆 ${data.highScore}`, canvas.width - 20, 60);
+    
+    // Instructions
+    ctx.fillStyle = 'rgba(0,0,0,0.5)';
+    ctx.fillRect(0, canvas.height - 30, canvas.width, 30);
+    ctx.font = '14px sans-serif';
+    ctx.fillStyle = '#fff';
+    ctx.textAlign = 'center';
+    ctx.fillText('Use arrow keys to dance and collect stars! Build combos by moving!', canvas.width / 2, canvas.height - 10);
+    
+    requestAnimationFrame(danceFloorLoop);
+}
+
+function drawDancingCharacter(x, y, color, time) {
+    const bounce = Math.sin(time * 8) * 8;
+    const sway = Math.sin(time * 4) * 5;
+    
+    ctx.save();
+    ctx.translate(x + sway, y + bounce);
+    
+    // Body
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.ellipse(0, 10, 20, 25, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    
+    // Head
+    ctx.beginPath();
+    ctx.arc(0, -15, 15, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    
+    // Eyes
+    ctx.fillStyle = '#fff';
+    ctx.beginPath();
+    ctx.arc(-5, -17, 4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(5, -17, 4, 0, Math.PI * 2);
+    ctx.fill();
+    
+    ctx.fillStyle = '#000';
+    ctx.beginPath();
+    ctx.arc(-5, -16, 2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(5, -16, 2, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Arms waving
+    const armAngle = Math.sin(time * 10) * 0.5;
+    ctx.fillStyle = color;
+    ctx.save();
+    ctx.translate(-18, 5);
+    ctx.rotate(-1 + armAngle);
+    ctx.beginPath();
+    ctx.ellipse(0, -10, 6, 15, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+    
+    ctx.save();
+    ctx.translate(18, 5);
+    ctx.rotate(1 - armAngle);
+    ctx.beginPath();
+    ctx.ellipse(0, -10, 6, 15, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+    
+    ctx.restore();
+}
+
+function drawDancingPanda(x, y, time, isDancing, direction) {
+    const bounce = isDancing ? Math.sin(time * 10) * 10 : 0;
+    const sway = isDancing ? Math.sin(time * 5) * 8 : 0;
+    
+    ctx.save();
+    ctx.translate(x + sway, y + bounce);
+    
+    // Shadow
+    ctx.fillStyle = 'rgba(0,0,0,0.3)';
+    ctx.beginPath();
+    ctx.ellipse(0, 35, 25, 8, 0, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Body
+    ctx.fillStyle = 'white';
+    ctx.beginPath();
+    ctx.ellipse(0, 10, 22, 28, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    
+    // Head
+    ctx.beginPath();
+    ctx.arc(0, -18, 20, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    
+    // Ears
+    ctx.fillStyle = 'black';
+    ctx.beginPath();
+    ctx.arc(-15, -35, 9, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(15, -35, 9, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Eye patches
+    ctx.beginPath();
+    ctx.ellipse(-8, -20, 7, 9, -0.2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(8, -20, 7, 9, 0.2, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Eyes (happy when dancing)
+    if (isDancing) {
+        ctx.strokeStyle = 'white';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(-8, -19, 4, 0.2 * Math.PI, 0.8 * Math.PI);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(8, -19, 4, 0.2 * Math.PI, 0.8 * Math.PI);
+        ctx.stroke();
+    } else {
+        ctx.fillStyle = 'white';
+        ctx.beginPath();
+        ctx.arc(-8, -20, 4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(8, -20, 4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = 'black';
+        ctx.beginPath();
+        ctx.arc(-8, -19, 2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(8, -19, 2, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    
+    // Nose
+    ctx.fillStyle = 'black';
+    ctx.beginPath();
+    ctx.ellipse(0, -10, 5, 3, 0, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Smile
+    ctx.strokeStyle = 'black';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(0, -7, 6, 0.1 * Math.PI, 0.9 * Math.PI);
+    ctx.stroke();
+    
+    // Arms (dancing animation)
+    const armWave = isDancing ? Math.sin(time * 12) * 0.8 : 0;
+    ctx.fillStyle = 'black';
+    
+    ctx.save();
+    ctx.translate(-22, 5);
+    ctx.rotate(-0.8 + armWave);
+    ctx.beginPath();
+    ctx.ellipse(0, -12, 7, 16, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+    
+    ctx.save();
+    ctx.translate(22, 5);
+    ctx.rotate(0.8 - armWave);
+    ctx.beginPath();
+    ctx.ellipse(0, -12, 7, 16, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+    
+    // Legs
+    ctx.beginPath();
+    ctx.ellipse(-10, 32, 9, 12, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(10, 32, 9, 12, 0, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Sunglasses if dancing
+    if (isDancing) {
+        ctx.fillStyle = '#333';
+        ctx.fillRect(-18, -24, 14, 8);
+        ctx.fillRect(4, -24, 14, 8);
+        ctx.fillRect(-4, -22, 8, 3);
+    }
+    
+    ctx.restore();
+}
+
+function handleDanceFloorKeys(key) {
+    if (key === 'Escape') {
+        endDanceFloor();
+        return;
+    }
+    // Movement handled in game loop via keysPressed
+}
+
+function endDanceFloor() {
+    const data = miniGameData;
+    if (miniGameScore > data.highScore) {
+        localStorage.setItem('danceFloorHigh', miniGameScore.toString());
+        data.highScore = miniGameScore;
+    }
+    
+    currentMode = MODE_PARTY_HUB;
+    
+    overlay.innerHTML = `
+        <h2 style="color: #06b6d4;">🕺 Dance Floor Complete!</h2>
+        <p style="font-size: 2rem;">Score: ${miniGameScore}</p>
+        <p>⭐ Stars collected: ${data.collected}</p>
+        <p>🏆 Best: ${data.highScore}</p>
+        <div class="overlay-buttons">
+            <button class="game-btn secondary" id="backBtn">BACK (ESC)</button>
+            <button class="game-btn" id="retryMiniBtn">DANCE AGAIN (ENTER)</button>
+        </div>
+    `;
+    overlay.classList.add('visible');
+    overlay.style.background = '';
+    overlay.style.boxShadow = '';
+    
+    document.getElementById('backBtn').onclick = startPartyHub;
+    document.getElementById('retryMiniBtn').onclick = startDanceFloor;
 }
 
 function gameOver() {
