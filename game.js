@@ -31,6 +31,11 @@ const MODE_MINIGAME_SNAKE = 'minigame_snake';
 const MODE_MINIGAME_BRICK = 'minigame_brick';
 const MODE_MINIGAME_SPACE = 'minigame_space';
 const MODE_MINIGAME_PUZZLE = 'minigame_puzzle';
+// Bundle 3 games
+const MODE_MINIGAME_FLAPPY = 'minigame_flappy';
+const MODE_MINIGAME_TETRIS = 'minigame_tetris';
+const MODE_MINIGAME_FISHING = 'minigame_fishing';
+const MODE_MINIGAME_RACING = 'minigame_racing';
 let currentMode = MODE_MAP;
 
 // Party/Confetti system
@@ -69,6 +74,24 @@ let miniGameProgress = {
 
 // Bundle 2 games (unlocked after completing bundle 1)
 let bundle2Unlocked = false;
+// Bundle 3 games (unlocked after completing bundle 2)
+let bundle3Unlocked = false;
+
+// Bundle 2 completion tracking
+let bundle2Progress = {
+    snake: { completed: false, bestLevel: 0 },
+    brick: { completed: false, bestLevel: 0 },
+    space: { completed: false, bestLevel: 0 },
+    puzzle: { completed: false, bestLevel: 0 }
+};
+
+// Bundle 3 completion tracking
+let bundle3Progress = {
+    flappy: { completed: false, bestLevel: 0 },
+    tetris: { completed: false, bestLevel: 0 },
+    fishing: { completed: false, bestLevel: 0 },
+    racing: { completed: false, bestLevel: 0 }
+};
 
 // Game state
 let gameRunning = false;
@@ -364,6 +387,27 @@ function handleKeyDown(e) {
         return;
     }
     
+    // Bundle 3 games
+    if (currentMode === MODE_MINIGAME_FLAPPY) {
+        handleFlappyKeys(key);
+        return;
+    }
+    
+    if (currentMode === MODE_MINIGAME_TETRIS) {
+        handleTetrisKeys(key);
+        return;
+    }
+    
+    if (currentMode === MODE_MINIGAME_FISHING) {
+        handleFishingKeys(key);
+        return;
+    }
+    
+    if (currentMode === MODE_MINIGAME_RACING) {
+        handleRacingKeys(key);
+        return;
+    }
+    
     if (overlay.classList.contains('visible')) {
         handleOverlayKeys(key);
     } else if (currentMode === MODE_MAP) {
@@ -460,9 +504,13 @@ function handlePartyHubKeys(key) {
     }
     
     // Tab to switch bundles
-    if (key === 'Tab' && bundle2Unlocked) {
-        currentBundle = currentBundle === 1 ? 2 : 1;
-        miniGames = currentBundle === 1 ? miniGamesBundle1 : miniGamesBundle2;
+    if (key === 'Tab') {
+        if (bundle3Unlocked) {
+            currentBundle = currentBundle === 1 ? 2 : (currentBundle === 2 ? 3 : 1);
+        } else if (bundle2Unlocked) {
+            currentBundle = currentBundle === 1 ? 2 : 1;
+        }
+        miniGames = currentBundle === 1 ? miniGamesBundle1 : (currentBundle === 2 ? miniGamesBundle2 : miniGamesBundle3);
         selectedMiniGame = 0;
         miniGameLevel = 1;
     }
@@ -563,13 +611,21 @@ function launchSelectedMiniGame() {
             case 8: startCakeMaker(); break;
             case 9: startDanceFloor(); break;
         }
-    } else {
+    } else if (currentBundle === 2) {
         // Bundle 2 games
         switch (selectedMiniGame) {
             case 0: startPandaSnake(); break;
             case 1: startBrickBreaker(); break;
             case 2: startSpacePanda(); break;
             case 3: startSlidePuzzle(); break;
+        }
+    } else {
+        // Bundle 3 games
+        switch (selectedMiniGame) {
+            case 0: startFlappyPanda(); break;
+            case 1: startPandaBlocks(); break;
+            case 2: startPandaFishing(); break;
+            case 3: startPandaRacer(); break;
         }
     }
 }
@@ -1842,6 +1898,14 @@ const miniGamesBundle2 = [
     { id: 'puzzle', name: 'Slide Puzzle', icon: '🧩', desc: 'Solve the puzzle!', color: '#a855f7', levels: 3 }
 ];
 
+// Bundle 3 - Unlocked after completing Bundle 2
+const miniGamesBundle3 = [
+    { id: 'flappy', name: 'Flappy Panda', icon: '🐦', desc: 'Fly through pipes!', color: '#14b8a6', levels: 3 },
+    { id: 'tetris', name: 'Panda Blocks', icon: '🟦', desc: 'Stack the blocks!', color: '#6366f1', levels: 3 },
+    { id: 'fishing', name: 'Panda Fishing', icon: '🎣', desc: 'Catch the fish!', color: '#0ea5e9', levels: 3 },
+    { id: 'racing', name: 'Panda Racer', icon: '🏎️', desc: 'Win the race!', color: '#dc2626', levels: 3 }
+];
+
 // Current active games based on bundle
 let miniGames = miniGamesBundle1;
 
@@ -1867,14 +1931,27 @@ function startPartyHub() {
 }
 
 function checkBundle2Unlock() {
-    const allCompleted = Object.values(miniGameProgress).every(p => p.completed);
-    if (allCompleted && !bundle2Unlocked) {
+    // Check Bundle 1 completion for Bundle 2 unlock
+    const bundle1Games = ['catch', 'dance', 'memory', 'runner', 'balloon', 'pong', 'whack', 'stack', 'cake', 'dancefloor'];
+    const bundle1Completed = bundle1Games.every(id => miniGameProgress[id]?.completed);
+    if (bundle1Completed && !bundle2Unlocked) {
         bundle2Unlocked = true;
         localStorage.setItem('bundle2Unlocked', 'true');
     }
-    // Load saved bundle unlock state
+    
+    // Check Bundle 2 completion for Bundle 3 unlock
+    const bundle2Completed = Object.values(bundle2Progress).every(p => p.completed);
+    if (bundle2Completed && bundle2Unlocked && !bundle3Unlocked) {
+        bundle3Unlocked = true;
+        localStorage.setItem('bundle3Unlocked', 'true');
+    }
+    
+    // Load saved bundle unlock states
     if (localStorage.getItem('bundle2Unlocked') === 'true') {
         bundle2Unlocked = true;
+    }
+    if (localStorage.getItem('bundle3Unlocked') === 'true') {
+        bundle3Unlocked = true;
     }
 }
 
@@ -5639,6 +5716,876 @@ function handlePuzzleKeys(key) {
 }
 
 function endSlidePuzzle() {
+    currentMode = MODE_PARTY_HUB;
+    startPartyHub();
+}
+
+// ==================== BUNDLE 3: FLAPPY PANDA ====================
+function startFlappyPanda() {
+    currentMode = MODE_MINIGAME_FLAPPY;
+    miniGameScore = 0;
+    partyStartTime = performance.now() / 1000;
+    
+    miniGameData = {
+        pandaY: canvas.height / 2,
+        velocity: 0,
+        pipes: [],
+        lastPipe: 0,
+        gravity: 0.4 + miniGameLevel * 0.1,
+        jumpForce: -8,
+        pipeGap: 180 - miniGameLevel * 20,
+        pipeSpeed: 3 + miniGameLevel,
+        gameOver: false,
+        started: false,
+        highScore: parseInt(localStorage.getItem('flappyHigh') || '0')
+    };
+    
+    overlay.classList.remove('visible');
+    requestAnimationFrame(flappyLoop);
+}
+
+function flappyLoop(timestamp) {
+    if (currentMode !== MODE_MINIGAME_FLAPPY) return;
+    
+    const time = timestamp / 1000;
+    const data = miniGameData;
+    
+    if (data.started && !data.gameOver) {
+        // Physics
+        data.velocity += data.gravity;
+        data.pandaY += data.velocity;
+        
+        // Spawn pipes
+        if (time - data.lastPipe > 2) {
+            const gapY = 100 + Math.random() * (canvas.height - 250);
+            data.pipes.push({
+                x: canvas.width,
+                gapY: gapY,
+                scored: false
+            });
+            data.lastPipe = time;
+        }
+        
+        // Move pipes
+        data.pipes.forEach(p => p.x -= data.pipeSpeed);
+        
+        // Score and collision
+        data.pipes.forEach(pipe => {
+            // Score
+            if (!pipe.scored && pipe.x + 50 < 100) {
+                pipe.scored = true;
+                miniGameScore++;
+            }
+            
+            // Collision
+            const pandaX = 100;
+            const pandaRadius = 20;
+            if (pipe.x < pandaX + pandaRadius && pipe.x + 50 > pandaX - pandaRadius) {
+                if (data.pandaY - pandaRadius < pipe.gapY || data.pandaY + pandaRadius > pipe.gapY + data.pipeGap) {
+                    data.gameOver = true;
+                }
+            }
+        });
+        
+        // Ground/ceiling collision
+        if (data.pandaY > canvas.height - 30 || data.pandaY < 30) {
+            data.gameOver = true;
+        }
+        
+        // Remove off-screen pipes
+        data.pipes = data.pipes.filter(p => p.x > -60);
+    }
+    
+    // Draw
+    // Sky
+    const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    gradient.addColorStop(0, '#87CEEB');
+    gradient.addColorStop(1, '#98FB98');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Clouds
+    ctx.fillStyle = 'rgba(255,255,255,0.8)';
+    for (let i = 0; i < 5; i++) {
+        const cx = ((i * 180 + time * 20) % (canvas.width + 100)) - 50;
+        ctx.beginPath();
+        ctx.arc(cx, 60 + i * 15, 25, 0, Math.PI * 2);
+        ctx.arc(cx + 20, 55 + i * 15, 30, 0, Math.PI * 2);
+        ctx.arc(cx + 45, 60 + i * 15, 25, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    
+    // Pipes
+    ctx.fillStyle = '#22c55e';
+    data.pipes.forEach(pipe => {
+        // Top pipe
+        ctx.fillRect(pipe.x, 0, 50, pipe.gapY);
+        ctx.fillStyle = '#16a34a';
+        ctx.fillRect(pipe.x - 5, pipe.gapY - 20, 60, 20);
+        ctx.fillStyle = '#22c55e';
+        
+        // Bottom pipe
+        ctx.fillRect(pipe.x, pipe.gapY + data.pipeGap, 50, canvas.height);
+        ctx.fillStyle = '#16a34a';
+        ctx.fillRect(pipe.x - 5, pipe.gapY + data.pipeGap, 60, 20);
+        ctx.fillStyle = '#22c55e';
+    });
+    
+    // Ground
+    ctx.fillStyle = '#8B4513';
+    ctx.fillRect(0, canvas.height - 30, canvas.width, 30);
+    
+    // Panda
+    const pandaX = 100;
+    const rotation = Math.min(Math.max(data.velocity * 0.05, -0.5), 0.5);
+    ctx.save();
+    ctx.translate(pandaX, data.pandaY);
+    ctx.rotate(rotation);
+    
+    // Body
+    ctx.fillStyle = '#fff';
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 25, 20, 0, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Face
+    ctx.beginPath();
+    ctx.arc(10, -5, 15, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Ears
+    ctx.fillStyle = '#000';
+    ctx.beginPath();
+    ctx.arc(0, -18, 8, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(18, -15, 8, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Eye patches
+    ctx.beginPath();
+    ctx.ellipse(5, -8, 5, 7, -0.2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(15, -8, 5, 7, 0.2, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Eyes
+    ctx.fillStyle = '#fff';
+    ctx.beginPath();
+    ctx.arc(5, -8, 3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(15, -8, 3, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Wing
+    ctx.fillStyle = '#ddd';
+    ctx.beginPath();
+    ctx.ellipse(-15, 5, 15, 8, -0.3 + Math.sin(time * 20) * 0.3, 0, Math.PI * 2);
+    ctx.fill();
+    
+    ctx.restore();
+    
+    // UI
+    ctx.font = 'bold 40px sans-serif';
+    ctx.fillStyle = '#fff';
+    ctx.strokeStyle = '#000';
+    ctx.lineWidth = 3;
+    ctx.textAlign = 'center';
+    ctx.strokeText(miniGameScore.toString(), canvas.width / 2, 60);
+    ctx.fillText(miniGameScore.toString(), canvas.width / 2, 60);
+    
+    ctx.font = 'bold 20px sans-serif';
+    ctx.fillStyle = '#14b8a6';
+    ctx.fillText('🐦 FLAPPY PANDA', canvas.width / 2, 30);
+    
+    ctx.textAlign = 'right';
+    ctx.fillStyle = '#fff';
+    ctx.font = '16px sans-serif';
+    ctx.fillText(`Best: ${data.highScore}`, canvas.width - 20, 30);
+    
+    if (!data.started) {
+        ctx.font = 'bold 24px sans-serif';
+        ctx.fillStyle = '#fff';
+        ctx.textAlign = 'center';
+        ctx.fillText('Tap SPACE to start!', canvas.width / 2, canvas.height / 2 + 50);
+    }
+    
+    if (data.gameOver) {
+        ctx.fillStyle = 'rgba(0,0,0,0.6)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.font = 'bold 40px sans-serif';
+        ctx.fillStyle = '#ef4444';
+        ctx.textAlign = 'center';
+        ctx.fillText('GAME OVER!', canvas.width / 2, canvas.height / 2 - 20);
+        ctx.font = '24px sans-serif';
+        ctx.fillStyle = '#fff';
+        ctx.fillText(`Score: ${miniGameScore}`, canvas.width / 2, canvas.height / 2 + 20);
+        ctx.fillText('Press ENTER to continue', canvas.width / 2, canvas.height / 2 + 60);
+    }
+    
+    requestAnimationFrame(flappyLoop);
+}
+
+function handleFlappyKeys(key) {
+    const data = miniGameData;
+    
+    if (data.gameOver && key === 'Enter') {
+        endFlappyPanda();
+        return;
+    }
+    if (key === 'Escape') {
+        endFlappyPanda();
+        return;
+    }
+    if (key === ' ' || key === 'ArrowUp') {
+        if (!data.started) data.started = true;
+        if (!data.gameOver) {
+            data.velocity = data.jumpForce;
+        }
+    }
+}
+
+function endFlappyPanda() {
+    const data = miniGameData;
+    if (miniGameScore > data.highScore) {
+        localStorage.setItem('flappyHigh', miniGameScore.toString());
+    }
+    if (miniGameScore >= 10) {
+        bundle3Progress.flappy.completed = true;
+        bundle3Progress.flappy.bestLevel = Math.max(bundle3Progress.flappy.bestLevel, miniGameLevel);
+    }
+    currentMode = MODE_PARTY_HUB;
+    startPartyHub();
+}
+
+// ==================== BUNDLE 3: PANDA BLOCKS (TETRIS) ====================
+function startPandaBlocks() {
+    currentMode = MODE_MINIGAME_TETRIS;
+    miniGameScore = 0;
+    partyStartTime = performance.now() / 1000;
+    
+    const cols = 10;
+    const rows = 20;
+    
+    miniGameData = {
+        grid: Array(rows).fill(null).map(() => Array(cols).fill(0)),
+        cols: cols,
+        rows: rows,
+        currentPiece: null,
+        pieceX: 0,
+        pieceY: 0,
+        lastDrop: 0,
+        dropSpeed: 1000 - miniGameLevel * 200,
+        gameOver: false,
+        lines: 0,
+        highScore: parseInt(localStorage.getItem('tetrisHigh') || '0')
+    };
+    
+    spawnTetrisPiece();
+    overlay.classList.remove('visible');
+    requestAnimationFrame(tetrisLoop);
+}
+
+const TETRIS_PIECES = [
+    { shape: [[1,1,1,1]], color: '#06b6d4' }, // I
+    { shape: [[1,1],[1,1]], color: '#fbbf24' }, // O
+    { shape: [[0,1,0],[1,1,1]], color: '#a855f7' }, // T
+    { shape: [[1,0,0],[1,1,1]], color: '#f97316' }, // L
+    { shape: [[0,0,1],[1,1,1]], color: '#3b82f6' }, // J
+    { shape: [[0,1,1],[1,1,0]], color: '#22c55e' }, // S
+    { shape: [[1,1,0],[0,1,1]], color: '#ef4444' }  // Z
+];
+
+function spawnTetrisPiece() {
+    const data = miniGameData;
+    const piece = TETRIS_PIECES[Math.floor(Math.random() * TETRIS_PIECES.length)];
+    data.currentPiece = { shape: piece.shape.map(row => [...row]), color: piece.color };
+    data.pieceX = Math.floor((data.cols - data.currentPiece.shape[0].length) / 2);
+    data.pieceY = 0;
+    
+    if (!canMove(0, 0)) {
+        data.gameOver = true;
+    }
+}
+
+function canMove(dx, dy, newShape = null) {
+    const data = miniGameData;
+    const shape = newShape || data.currentPiece.shape;
+    const newX = data.pieceX + dx;
+    const newY = data.pieceY + dy;
+    
+    for (let y = 0; y < shape.length; y++) {
+        for (let x = 0; x < shape[y].length; x++) {
+            if (shape[y][x]) {
+                const gridX = newX + x;
+                const gridY = newY + y;
+                if (gridX < 0 || gridX >= data.cols || gridY >= data.rows) return false;
+                if (gridY >= 0 && data.grid[gridY][gridX]) return false;
+            }
+        }
+    }
+    return true;
+}
+
+function rotatePiece() {
+    const data = miniGameData;
+    const shape = data.currentPiece.shape;
+    const rotated = shape[0].map((_, i) => shape.map(row => row[i]).reverse());
+    if (canMove(0, 0, rotated)) {
+        data.currentPiece.shape = rotated;
+    }
+}
+
+function lockPiece() {
+    const data = miniGameData;
+    for (let y = 0; y < data.currentPiece.shape.length; y++) {
+        for (let x = 0; x < data.currentPiece.shape[y].length; x++) {
+            if (data.currentPiece.shape[y][x]) {
+                const gridY = data.pieceY + y;
+                if (gridY >= 0) {
+                    data.grid[gridY][data.pieceX + x] = data.currentPiece.color;
+                }
+            }
+        }
+    }
+    clearLines();
+    spawnTetrisPiece();
+}
+
+function clearLines() {
+    const data = miniGameData;
+    for (let y = data.rows - 1; y >= 0; y--) {
+        if (data.grid[y].every(cell => cell !== 0)) {
+            data.grid.splice(y, 1);
+            data.grid.unshift(Array(data.cols).fill(0));
+            data.lines++;
+            miniGameScore += 100;
+            y++;
+        }
+    }
+}
+
+function tetrisLoop(timestamp) {
+    if (currentMode !== MODE_MINIGAME_TETRIS) return;
+    
+    const time = timestamp;
+    const data = miniGameData;
+    
+    if (!data.gameOver) {
+        // Auto drop
+        if (time - data.lastDrop > data.dropSpeed) {
+            if (canMove(0, 1)) {
+                data.pieceY++;
+            } else {
+                lockPiece();
+            }
+            data.lastDrop = time;
+        }
+    }
+    
+    // Draw
+    ctx.fillStyle = '#1a1a2e';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    const blockSize = 22;
+    const gridX = (canvas.width - data.cols * blockSize) / 2;
+    const gridY = 60;
+    
+    // Grid background
+    ctx.fillStyle = '#16213e';
+    ctx.fillRect(gridX, gridY, data.cols * blockSize, data.rows * blockSize);
+    
+    // Grid lines
+    ctx.strokeStyle = '#1a1a3e';
+    ctx.lineWidth = 1;
+    for (let x = 0; x <= data.cols; x++) {
+        ctx.beginPath();
+        ctx.moveTo(gridX + x * blockSize, gridY);
+        ctx.lineTo(gridX + x * blockSize, gridY + data.rows * blockSize);
+        ctx.stroke();
+    }
+    for (let y = 0; y <= data.rows; y++) {
+        ctx.beginPath();
+        ctx.moveTo(gridX, gridY + y * blockSize);
+        ctx.lineTo(gridX + data.cols * blockSize, gridY + y * blockSize);
+        ctx.stroke();
+    }
+    
+    // Placed blocks
+    for (let y = 0; y < data.rows; y++) {
+        for (let x = 0; x < data.cols; x++) {
+            if (data.grid[y][x]) {
+                ctx.fillStyle = data.grid[y][x];
+                ctx.fillRect(gridX + x * blockSize + 1, gridY + y * blockSize + 1, blockSize - 2, blockSize - 2);
+            }
+        }
+    }
+    
+    // Current piece
+    if (data.currentPiece && !data.gameOver) {
+        ctx.fillStyle = data.currentPiece.color;
+        for (let y = 0; y < data.currentPiece.shape.length; y++) {
+            for (let x = 0; x < data.currentPiece.shape[y].length; x++) {
+                if (data.currentPiece.shape[y][x]) {
+                    ctx.fillRect(
+                        gridX + (data.pieceX + x) * blockSize + 1,
+                        gridY + (data.pieceY + y) * blockSize + 1,
+                        blockSize - 2, blockSize - 2
+                    );
+                }
+            }
+        }
+    }
+    
+    // UI
+    ctx.font = 'bold 24px sans-serif';
+    ctx.fillStyle = '#6366f1';
+    ctx.textAlign = 'center';
+    ctx.fillText('🟦 PANDA BLOCKS', canvas.width / 2, 35);
+    
+    ctx.font = '16px sans-serif';
+    ctx.fillStyle = '#fff';
+    ctx.textAlign = 'left';
+    ctx.fillText(`Score: ${miniGameScore}`, 20, 100);
+    ctx.fillText(`Lines: ${data.lines}`, 20, 125);
+    ctx.fillText(`Best: ${data.highScore}`, 20, 150);
+    
+    ctx.textAlign = 'right';
+    ctx.fillText('↑ Rotate', canvas.width - 20, 100);
+    ctx.fillText('←→ Move', canvas.width - 20, 125);
+    ctx.fillText('↓ Drop', canvas.width - 20, 150);
+    
+    if (data.gameOver) {
+        ctx.fillStyle = 'rgba(0,0,0,0.7)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.font = 'bold 36px sans-serif';
+        ctx.fillStyle = '#ef4444';
+        ctx.textAlign = 'center';
+        ctx.fillText('GAME OVER!', canvas.width / 2, canvas.height / 2);
+        ctx.font = '20px sans-serif';
+        ctx.fillStyle = '#fff';
+        ctx.fillText('Press ENTER to continue', canvas.width / 2, canvas.height / 2 + 40);
+    }
+    
+    requestAnimationFrame(tetrisLoop);
+}
+
+function handleTetrisKeys(key) {
+    const data = miniGameData;
+    
+    if (data.gameOver && key === 'Enter') {
+        endPandaBlocks();
+        return;
+    }
+    if (key === 'Escape') {
+        endPandaBlocks();
+        return;
+    }
+    
+    if (!data.gameOver) {
+        if (key === 'ArrowLeft' && canMove(-1, 0)) data.pieceX--;
+        if (key === 'ArrowRight' && canMove(1, 0)) data.pieceX++;
+        if (key === 'ArrowDown' && canMove(0, 1)) data.pieceY++;
+        if (key === 'ArrowUp') rotatePiece();
+        if (key === ' ') {
+            while (canMove(0, 1)) data.pieceY++;
+            lockPiece();
+        }
+    }
+}
+
+function endPandaBlocks() {
+    const data = miniGameData;
+    if (miniGameScore > data.highScore) {
+        localStorage.setItem('tetrisHigh', miniGameScore.toString());
+    }
+    if (data.lines >= 5) {
+        bundle3Progress.tetris.completed = true;
+        bundle3Progress.tetris.bestLevel = Math.max(bundle3Progress.tetris.bestLevel, miniGameLevel);
+    }
+    currentMode = MODE_PARTY_HUB;
+    startPartyHub();
+}
+
+// ==================== BUNDLE 3: PANDA FISHING ====================
+function startPandaFishing() {
+    currentMode = MODE_MINIGAME_FISHING;
+    miniGameScore = 0;
+    miniGameTimer = 60;
+    partyStartTime = performance.now() / 1000;
+    
+    miniGameData = {
+        hookX: canvas.width / 2,
+        hookY: 150,
+        hookDown: false,
+        hookSpeed: 5 + miniGameLevel,
+        fish: [],
+        caught: 0,
+        lastSpawn: 0,
+        highScore: parseInt(localStorage.getItem('fishingHigh') || '0')
+    };
+    
+    overlay.classList.remove('visible');
+    requestAnimationFrame(fishingLoop);
+    
+    const timer = setInterval(() => {
+        if (currentMode !== MODE_MINIGAME_FISHING) { clearInterval(timer); return; }
+        miniGameTimer--;
+        if (miniGameTimer <= 0) { clearInterval(timer); endPandaFishing(); }
+    }, 1000);
+}
+
+function fishingLoop(timestamp) {
+    if (currentMode !== MODE_MINIGAME_FISHING) return;
+    
+    const time = timestamp / 1000;
+    const data = miniGameData;
+    
+    // Hook movement
+    if (!data.hookDown) {
+        if (keysPressed.left) data.hookX -= 5;
+        if (keysPressed.right) data.hookX += 5;
+        data.hookX = Math.max(50, Math.min(canvas.width - 50, data.hookX));
+    } else {
+        data.hookY += data.hookSpeed;
+        if (data.hookY > canvas.height - 50) {
+            data.hookDown = false;
+            data.hookY = 150;
+        }
+    }
+    
+    // Spawn fish
+    if (time - data.lastSpawn > 1.5) {
+        const types = [
+            { icon: '🐟', points: 10, speed: 2 },
+            { icon: '🐠', points: 20, speed: 3 },
+            { icon: '🦈', points: 50, speed: 4 },
+            { icon: '🐙', points: 30, speed: 2 },
+            { icon: '🦀', points: 15, speed: 1 }
+        ];
+        const type = types[Math.floor(Math.random() * types.length)];
+        data.fish.push({
+            x: Math.random() > 0.5 ? -30 : canvas.width + 30,
+            y: 200 + Math.random() * 200,
+            ...type,
+            direction: Math.random() > 0.5 ? 1 : -1
+        });
+        data.lastSpawn = time;
+    }
+    
+    // Move fish
+    data.fish.forEach(f => {
+        f.x += f.speed * f.direction;
+    });
+    data.fish = data.fish.filter(f => f.x > -50 && f.x < canvas.width + 50);
+    
+    // Check catch
+    if (data.hookDown) {
+        for (let i = data.fish.length - 1; i >= 0; i--) {
+            const f = data.fish[i];
+            const dx = f.x - data.hookX;
+            const dy = f.y - data.hookY;
+            if (Math.sqrt(dx*dx + dy*dy) < 40) {
+                miniGameScore += f.points;
+                data.caught++;
+                data.fish.splice(i, 1);
+                data.hookDown = false;
+                data.hookY = 150;
+                break;
+            }
+        }
+    }
+    
+    // Draw
+    // Sky
+    ctx.fillStyle = '#87CEEB';
+    ctx.fillRect(0, 0, canvas.width, 150);
+    
+    // Water
+    const waterGradient = ctx.createLinearGradient(0, 150, 0, canvas.height);
+    waterGradient.addColorStop(0, '#4fc3f7');
+    waterGradient.addColorStop(1, '#0277bd');
+    ctx.fillStyle = waterGradient;
+    ctx.fillRect(0, 150, canvas.width, canvas.height - 150);
+    
+    // Waves
+    ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+    ctx.lineWidth = 2;
+    for (let i = 0; i < 5; i++) {
+        ctx.beginPath();
+        for (let x = 0; x < canvas.width; x += 10) {
+            const y = 155 + i * 30 + Math.sin(x * 0.02 + time * 2 + i) * 5;
+            if (x === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+    }
+    
+    // Fish
+    data.fish.forEach(f => {
+        ctx.font = '30px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.save();
+        ctx.translate(f.x, f.y);
+        if (f.direction < 0) ctx.scale(-1, 1);
+        ctx.fillText(f.icon, 0, 10);
+        ctx.restore();
+    });
+    
+    // Fishing line
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(data.hookX, 0);
+    ctx.lineTo(data.hookX, data.hookY);
+    ctx.stroke();
+    
+    // Hook
+    ctx.font = '24px sans-serif';
+    ctx.fillText('🪝', data.hookX, data.hookY + 10);
+    
+    // Panda fisherman
+    ctx.font = '40px sans-serif';
+    ctx.fillText('🐼', data.hookX, 50);
+    ctx.font = '20px sans-serif';
+    ctx.fillText('🎣', data.hookX + 25, 60);
+    
+    // UI
+    ctx.fillStyle = 'rgba(0,0,0,0.5)';
+    ctx.fillRect(0, 0, canvas.width, 40);
+    ctx.font = 'bold 20px sans-serif';
+    ctx.fillStyle = '#fff';
+    ctx.textAlign = 'left';
+    ctx.fillText(`🐟 ${data.caught}`, 20, 28);
+    ctx.fillText(`⭐ ${miniGameScore}`, 100, 28);
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#0ea5e9';
+    ctx.fillText('🎣 PANDA FISHING', canvas.width / 2, 28);
+    ctx.textAlign = 'right';
+    ctx.fillStyle = '#fff';
+    ctx.fillText(`⏱️ ${miniGameTimer}s`, canvas.width - 20, 28);
+    
+    ctx.font = '14px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('←→ Move | SPACE to cast!', canvas.width / 2, canvas.height - 15);
+    
+    requestAnimationFrame(fishingLoop);
+}
+
+function handleFishingKeys(key) {
+    if (key === 'Escape') {
+        endPandaFishing();
+        return;
+    }
+    if (key === ' ' && !miniGameData.hookDown) {
+        miniGameData.hookDown = true;
+    }
+}
+
+function endPandaFishing() {
+    const data = miniGameData;
+    if (miniGameScore > data.highScore) {
+        localStorage.setItem('fishingHigh', miniGameScore.toString());
+    }
+    if (data.caught >= 5) {
+        bundle3Progress.fishing.completed = true;
+        bundle3Progress.fishing.bestLevel = Math.max(bundle3Progress.fishing.bestLevel, miniGameLevel);
+    }
+    currentMode = MODE_PARTY_HUB;
+    startPartyHub();
+}
+
+// ==================== BUNDLE 3: PANDA RACER ====================
+function startPandaRacer() {
+    currentMode = MODE_MINIGAME_RACING;
+    miniGameScore = 0;
+    partyStartTime = performance.now() / 1000;
+    
+    miniGameData = {
+        playerX: canvas.width / 2,
+        playerY: canvas.height - 100,
+        speed: 0,
+        maxSpeed: 8 + miniGameLevel * 2,
+        roadOffset: 0,
+        obstacles: [],
+        coins: [],
+        lastObstacle: 0,
+        lastCoin: 0,
+        distance: 0,
+        lives: 3,
+        gameOver: false,
+        highScore: parseInt(localStorage.getItem('racingHigh') || '0')
+    };
+    
+    overlay.classList.remove('visible');
+    requestAnimationFrame(racingLoop);
+}
+
+function racingLoop(timestamp) {
+    if (currentMode !== MODE_MINIGAME_RACING) return;
+    
+    const time = timestamp / 1000;
+    const data = miniGameData;
+    
+    if (!data.gameOver) {
+        // Acceleration
+        if (keysPressed.up) data.speed = Math.min(data.speed + 0.2, data.maxSpeed);
+        else data.speed = Math.max(data.speed - 0.1, 2);
+        
+        // Steering
+        if (keysPressed.left) data.playerX -= 5;
+        if (keysPressed.right) data.playerX += 5;
+        data.playerX = Math.max(200, Math.min(canvas.width - 200, data.playerX));
+        
+        data.roadOffset += data.speed;
+        data.distance += data.speed;
+        miniGameScore = Math.floor(data.distance / 10);
+        
+        // Spawn obstacles
+        if (time - data.lastObstacle > 1.5) {
+            data.obstacles.push({
+                x: 200 + Math.random() * (canvas.width - 400),
+                y: -50,
+                type: Math.random() > 0.5 ? '🚗' : '🚙'
+            });
+            data.lastObstacle = time;
+        }
+        
+        // Spawn coins
+        if (time - data.lastCoin > 0.8) {
+            data.coins.push({
+                x: 200 + Math.random() * (canvas.width - 400),
+                y: -30
+            });
+            data.lastCoin = time;
+        }
+        
+        // Move obstacles
+        data.obstacles.forEach(o => o.y += data.speed * 0.8);
+        data.coins.forEach(c => c.y += data.speed);
+        
+        // Collision with obstacles
+        for (let i = data.obstacles.length - 1; i >= 0; i--) {
+            const o = data.obstacles[i];
+            if (Math.abs(o.x - data.playerX) < 40 && Math.abs(o.y - data.playerY) < 40) {
+                data.obstacles.splice(i, 1);
+                data.lives--;
+                if (data.lives <= 0) data.gameOver = true;
+            }
+        }
+        
+        // Collect coins
+        for (let i = data.coins.length - 1; i >= 0; i--) {
+            const c = data.coins[i];
+            if (Math.abs(c.x - data.playerX) < 30 && Math.abs(c.y - data.playerY) < 30) {
+                data.coins.splice(i, 1);
+                miniGameScore += 50;
+            }
+        }
+        
+        // Remove off-screen
+        data.obstacles = data.obstacles.filter(o => o.y < canvas.height + 50);
+        data.coins = data.coins.filter(c => c.y < canvas.height + 50);
+    }
+    
+    // Draw
+    // Grass
+    ctx.fillStyle = '#22c55e';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Road
+    ctx.fillStyle = '#374151';
+    ctx.fillRect(180, 0, canvas.width - 360, canvas.height);
+    
+    // Road lines
+    ctx.strokeStyle = '#fbbf24';
+    ctx.lineWidth = 5;
+    ctx.setLineDash([40, 30]);
+    ctx.lineDashOffset = -data.roadOffset % 70;
+    ctx.beginPath();
+    ctx.moveTo(canvas.width / 2, 0);
+    ctx.lineTo(canvas.width / 2, canvas.height);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    
+    // Road edges
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(180, 0, 10, canvas.height);
+    ctx.fillRect(canvas.width - 190, 0, 10, canvas.height);
+    
+    // Coins
+    ctx.font = '24px sans-serif';
+    data.coins.forEach(c => {
+        ctx.fillText('🪙', c.x, c.y);
+    });
+    
+    // Obstacles
+    ctx.font = '40px sans-serif';
+    data.obstacles.forEach(o => {
+        ctx.fillText(o.type, o.x, o.y);
+    });
+    
+    // Player car (panda mobile!)
+    ctx.font = '50px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('🏎️', data.playerX, data.playerY);
+    ctx.font = '20px sans-serif';
+    ctx.fillText('🐼', data.playerX, data.playerY - 15);
+    
+    // UI
+    ctx.fillStyle = 'rgba(0,0,0,0.6)';
+    ctx.fillRect(0, 0, canvas.width, 50);
+    ctx.font = 'bold 20px sans-serif';
+    ctx.fillStyle = '#fff';
+    ctx.textAlign = 'left';
+    ctx.fillText(`Score: ${miniGameScore}`, 20, 32);
+    ctx.fillText(`Lives: ${'❤️'.repeat(data.lives)}`, 180, 32);
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#dc2626';
+    ctx.fillText('🏎️ PANDA RACER', canvas.width / 2, 32);
+    ctx.textAlign = 'right';
+    ctx.fillStyle = '#fff';
+    ctx.fillText(`Best: ${data.highScore}`, canvas.width - 20, 32);
+    
+    if (data.gameOver) {
+        ctx.fillStyle = 'rgba(0,0,0,0.7)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.font = 'bold 40px sans-serif';
+        ctx.fillStyle = '#ef4444';
+        ctx.textAlign = 'center';
+        ctx.fillText('CRASH!', canvas.width / 2, canvas.height / 2);
+        ctx.font = '24px sans-serif';
+        ctx.fillStyle = '#fff';
+        ctx.fillText(`Final Score: ${miniGameScore}`, canvas.width / 2, canvas.height / 2 + 40);
+        ctx.fillText('Press ENTER to continue', canvas.width / 2, canvas.height / 2 + 80);
+    }
+    
+    requestAnimationFrame(racingLoop);
+}
+
+function handleRacingKeys(key) {
+    const data = miniGameData;
+    if (data.gameOver && key === 'Enter') {
+        endPandaRacer();
+        return;
+    }
+    if (key === 'Escape') {
+        endPandaRacer();
+        return;
+    }
+}
+
+function endPandaRacer() {
+    const data = miniGameData;
+    if (miniGameScore > data.highScore) {
+        localStorage.setItem('racingHigh', miniGameScore.toString());
+    }
+    if (miniGameScore >= 500) {
+        bundle3Progress.racing.completed = true;
+        bundle3Progress.racing.bestLevel = Math.max(bundle3Progress.racing.bestLevel, miniGameLevel);
+    }
     currentMode = MODE_PARTY_HUB;
     startPartyHub();
 }
