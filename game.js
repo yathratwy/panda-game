@@ -15,6 +15,10 @@ const debugKeys = document.getElementById('debugKeys');
 const MODE_MAP = 'map';
 const MODE_PLAYING = 'playing';
 const MODE_PARTY = 'party';
+const MODE_PARTY_HUB = 'party_hub';
+const MODE_MINIGAME_CATCH = 'minigame_catch';
+const MODE_MINIGAME_DANCE = 'minigame_dance';
+const MODE_MINIGAME_MEMORY = 'minigame_memory';
 let currentMode = MODE_MAP;
 
 // Party/Confetti system
@@ -22,6 +26,12 @@ let confetti = [];
 let partyStartTime = 0;
 let levelPartyActive = false;
 let levelPartyStars = 0;
+
+// Mini-game states
+let miniGameScore = 0;
+let miniGameTimer = 0;
+let miniGameData = {};
+let selectedMiniGame = 0;
 
 // Game state
 let gameRunning = false;
@@ -237,8 +247,27 @@ function handleKeyDown(e) {
     
     // Handle different game states
     if (currentMode === MODE_PARTY) {
-        // Any key exits party and goes back to map!
-        exitParty();
+        // Party celebration - wait for it to finish
+        return;
+    }
+    
+    if (currentMode === MODE_PARTY_HUB) {
+        handlePartyHubKeys(key);
+        return;
+    }
+    
+    if (currentMode === MODE_MINIGAME_DANCE) {
+        handleDanceKeys(key);
+        return;
+    }
+    
+    if (currentMode === MODE_MINIGAME_MEMORY) {
+        handleMemoryKeys(key);
+        return;
+    }
+    
+    if (currentMode === MODE_MINIGAME_CATCH) {
+        handleCatchKeys(key);
         return;
     }
     
@@ -317,6 +346,116 @@ function handleGameKeys(key) {
     if (key === 'm' || key === 'M' || key === 'Escape') {
         showMap();
     }
+}
+
+function handlePartyHubKeys(key) {
+    if (overlay.classList.contains('visible')) {
+        // Handle overlay buttons in party hub
+        if (key === 'Enter' || key === ' ') {
+            const btn = document.getElementById('retryMiniBtn');
+            if (btn) btn.click();
+        }
+        if (key === 'Escape') {
+            const btn = document.getElementById('backBtn');
+            if (btn) btn.click();
+        }
+        return;
+    }
+    
+    if (key === 'ArrowLeft' || key === 'a' || key === 'A') {
+        selectedMiniGame = (selectedMiniGame - 1 + miniGames.length) % miniGames.length;
+    }
+    if (key === 'ArrowRight' || key === 'd' || key === 'D') {
+        selectedMiniGame = (selectedMiniGame + 1) % miniGames.length;
+    }
+    if (key === 'Enter' || key === ' ') {
+        launchSelectedMiniGame();
+    }
+    if (key === '1') {
+        selectedMiniGame = 0;
+        launchSelectedMiniGame();
+    }
+    if (key === '2') {
+        selectedMiniGame = 1;
+        launchSelectedMiniGame();
+    }
+    if (key === '3') {
+        selectedMiniGame = 2;
+        launchSelectedMiniGame();
+    }
+    if (key === 'Escape' || key === 'm' || key === 'M') {
+        exitParty();
+    }
+}
+
+function launchSelectedMiniGame() {
+    switch (selectedMiniGame) {
+        case 0: startBambooCatch(); break;
+        case 1: startPandaDance(); break;
+        case 2: startMemoryMatch(); break;
+    }
+}
+
+function handleDanceKeys(key) {
+    if (key === 'Escape') {
+        endPandaDance();
+        return;
+    }
+    if (key === 'ArrowUp' || key === 'w' || key === 'W') {
+        checkDanceHit('up');
+    }
+    if (key === 'ArrowDown' || key === 's' || key === 'S') {
+        checkDanceHit('down');
+    }
+    if (key === 'ArrowLeft' || key === 'a' || key === 'A') {
+        checkDanceHit('left');
+    }
+    if (key === 'ArrowRight' || key === 'd' || key === 'D') {
+        checkDanceHit('right');
+    }
+}
+
+function handleMemoryKeys(key) {
+    if (key === 'Escape') {
+        currentMode = MODE_PARTY_HUB;
+        startPartyHub();
+        return;
+    }
+    
+    const data = miniGameData;
+    const cols = 4;
+    
+    if (key === 'ArrowLeft' || key === 'a' || key === 'A') {
+        if (data.selectedIndex % cols > 0) {
+            data.selectedIndex--;
+        }
+    }
+    if (key === 'ArrowRight' || key === 'd' || key === 'D') {
+        if (data.selectedIndex % cols < cols - 1) {
+            data.selectedIndex++;
+        }
+    }
+    if (key === 'ArrowUp' || key === 'w' || key === 'W') {
+        if (data.selectedIndex >= cols) {
+            data.selectedIndex -= cols;
+        }
+    }
+    if (key === 'ArrowDown' || key === 's' || key === 'S') {
+        if (data.selectedIndex < data.cards.length - cols) {
+            data.selectedIndex += cols;
+        }
+    }
+    if (key === 'Enter' || key === ' ') {
+        flipMemoryCard();
+    }
+}
+
+function handleCatchKeys(key) {
+    if (key === 'Escape') {
+        endBambooCatch();
+        return;
+    }
+    // Movement is handled in the game loop via keysPressed
 }
 
 function findNearestLevel(direction) {
@@ -1440,17 +1579,18 @@ function startParty() {
     partyStartTime = performance.now() / 1000;
     confetti = [];
     createConfetti();
+    selectedMiniGame = 0;
     
-    overlay.innerHTML = `
-        <div style="text-align: center; padding: 20px;">
-            <p style="font-size: 1.5rem; color: #ffd700; margin-bottom: 20px;">
-                Press any key to play again!
-            </p>
-        </div>
-    `;
-    overlay.classList.add('visible');
+    overlay.classList.remove('visible');
     overlay.style.background = 'transparent';
     overlay.style.boxShadow = 'none';
+    
+    // Show party for 4 seconds then go to party hub
+    setTimeout(() => {
+        if (currentMode === MODE_PARTY) {
+            startPartyHub();
+        }
+    }, 4000);
     
     requestAnimationFrame(partyLoop);
 }
@@ -1471,9 +1611,176 @@ function partyLoop(timestamp) {
     ctx.font = 'bold 20px sans-serif';
     ctx.textAlign = 'center';
     ctx.fillStyle = 'white';
-    ctx.fillText('🎮 Press any key to play again! 🎮', canvas.width / 2, canvas.height - 60);
+    ctx.fillText('🎮 Party games loading... 🎮', canvas.width / 2, canvas.height - 60);
     
     requestAnimationFrame(partyLoop);
+}
+
+// ==================== PARTY HUB - MINI GAME SELECTION ====================
+const miniGames = [
+    { id: 'catch', name: 'Bamboo Catch', icon: '🎋', desc: 'Catch falling bamboo!', color: '#4ade80' },
+    { id: 'dance', name: 'Panda Dance', icon: '💃', desc: 'Match the arrows!', color: '#f472b6' },
+    { id: 'memory', name: 'Memory Match', icon: '🧠', desc: 'Find the pairs!', color: '#60a5fa' }
+];
+
+function startPartyHub() {
+    currentMode = MODE_PARTY_HUB;
+    confetti = [];
+    createConfetti();
+    partyStartTime = performance.now() / 1000;
+    selectedMiniGame = 0;
+    
+    overlay.classList.remove('visible');
+    requestAnimationFrame(partyHubLoop);
+}
+
+function partyHubLoop(timestamp) {
+    if (currentMode !== MODE_PARTY_HUB) return;
+    
+    const time = timestamp / 1000 - partyStartTime;
+    
+    // Background
+    drawPartyBackground(time);
+    updateConfetti();
+    confetti.forEach(piece => drawConfettiPiece(piece));
+    
+    // Title
+    ctx.save();
+    ctx.shadowColor = '#ffd700';
+    ctx.shadowBlur = 20;
+    ctx.font = 'bold 42px "Fredoka One", cursive, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#fff';
+    ctx.fillText('🎉 PANDA PARTY! 🎉', canvas.width / 2, 70);
+    ctx.restore();
+    
+    ctx.font = 'bold 20px sans-serif';
+    ctx.fillStyle = '#ffd700';
+    ctx.fillText('Choose a mini-game to play!', canvas.width / 2, 110);
+    
+    // Draw mini-game cards
+    const cardWidth = 180;
+    const cardHeight = 200;
+    const startX = (canvas.width - (miniGames.length * cardWidth + (miniGames.length - 1) * 30)) / 2;
+    const cardY = 160;
+    
+    miniGames.forEach((game, index) => {
+        const cardX = startX + index * (cardWidth + 30);
+        const isSelected = index === selectedMiniGame;
+        const hoverBounce = isSelected ? Math.sin(time * 6) * 5 : 0;
+        
+        // Card shadow
+        ctx.fillStyle = 'rgba(0,0,0,0.3)';
+        ctx.fillRect(cardX + 5, cardY + 5 - hoverBounce, cardWidth, cardHeight);
+        
+        // Card background
+        const cardGradient = ctx.createLinearGradient(cardX, cardY, cardX, cardY + cardHeight);
+        cardGradient.addColorStop(0, isSelected ? game.color : '#444');
+        cardGradient.addColorStop(1, isSelected ? shadeColor(game.color, -30) : '#222');
+        ctx.fillStyle = cardGradient;
+        ctx.fillRect(cardX, cardY - hoverBounce, cardWidth, cardHeight);
+        
+        // Card border
+        ctx.strokeStyle = isSelected ? '#fff' : '#666';
+        ctx.lineWidth = isSelected ? 4 : 2;
+        ctx.strokeRect(cardX, cardY - hoverBounce, cardWidth, cardHeight);
+        
+        // Icon
+        ctx.font = '60px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(game.icon, cardX + cardWidth / 2, cardY + 70 - hoverBounce);
+        
+        // Name
+        ctx.font = 'bold 18px sans-serif';
+        ctx.fillStyle = '#fff';
+        ctx.fillText(game.name, cardX + cardWidth / 2, cardY + 110 - hoverBounce);
+        
+        // Description
+        ctx.font = '14px sans-serif';
+        ctx.fillStyle = '#ddd';
+        ctx.fillText(game.desc, cardX + cardWidth / 2, cardY + 140 - hoverBounce);
+        
+        // Number key hint
+        ctx.font = 'bold 16px sans-serif';
+        ctx.fillStyle = isSelected ? '#ffd700' : '#888';
+        ctx.fillText(`Press ${index + 1}`, cardX + cardWidth / 2, cardY + cardHeight - 20 - hoverBounce);
+    });
+    
+    // Instructions
+    ctx.font = 'bold 18px sans-serif';
+    ctx.fillStyle = '#fff';
+    ctx.textAlign = 'center';
+    ctx.fillText('← → to select | ENTER to play | ESC for map', canvas.width / 2, canvas.height - 70);
+    
+    // Draw small dancing panda
+    drawSmallDancingPanda(80, canvas.height - 100, time);
+    drawSmallDancingPanda(canvas.width - 80, canvas.height - 100, time);
+    
+    requestAnimationFrame(partyHubLoop);
+}
+
+function shadeColor(color, percent) {
+    const num = parseInt(color.replace('#', ''), 16);
+    const amt = Math.round(2.55 * percent);
+    const R = (num >> 16) + amt;
+    const G = (num >> 8 & 0x00FF) + amt;
+    const B = (num & 0x0000FF) + amt;
+    return '#' + (0x1000000 + 
+        (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 + 
+        (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 + 
+        (B < 255 ? B < 1 ? 0 : B : 255)
+    ).toString(16).slice(1);
+}
+
+function drawSmallDancingPanda(x, y, time) {
+    const bounce = Math.sin(time * 8) * 5;
+    const sway = Math.sin(time * 4) * 3;
+    
+    ctx.save();
+    ctx.translate(x + sway, y + bounce);
+    
+    // Body
+    ctx.fillStyle = 'white';
+    ctx.beginPath();
+    ctx.ellipse(0, 8, 12, 15, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    
+    // Head
+    ctx.beginPath();
+    ctx.arc(0, -8, 12, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    
+    // Ears
+    ctx.fillStyle = 'black';
+    ctx.beginPath();
+    ctx.arc(-9, -18, 5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(9, -18, 5, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Eye patches
+    ctx.beginPath();
+    ctx.ellipse(-5, -10, 4, 5, -0.3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(5, -10, 4, 5, 0.3, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Eyes
+    ctx.fillStyle = 'white';
+    ctx.beginPath();
+    ctx.arc(-5, -10, 2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(5, -10, 2, 0, Math.PI * 2);
+    ctx.fill();
+    
+    ctx.restore();
 }
 
 function exitParty() {
@@ -1483,6 +1790,642 @@ function exitParty() {
     overlay.style.boxShadow = '';
     overlay.classList.remove('visible');
     showMap();
+}
+
+// ==================== MINI GAME: BAMBOO CATCH ====================
+function startBambooCatch() {
+    currentMode = MODE_MINIGAME_CATCH;
+    miniGameScore = 0;
+    miniGameTimer = 30;
+    partyStartTime = performance.now() / 1000;
+    miniGameData = {
+        pandaX: canvas.width / 2,
+        bamboos: [],
+        lastSpawn: 0,
+        highScore: parseInt(localStorage.getItem('bambooCatchHigh') || '0')
+    };
+    
+    overlay.classList.remove('visible');
+    requestAnimationFrame(bambooCatchLoop);
+    
+    // Timer countdown
+    const timerInterval = setInterval(() => {
+        if (currentMode !== MODE_MINIGAME_CATCH) {
+            clearInterval(timerInterval);
+            return;
+        }
+        miniGameTimer--;
+        if (miniGameTimer <= 0) {
+            clearInterval(timerInterval);
+            endBambooCatch();
+        }
+    }, 1000);
+}
+
+function bambooCatchLoop(timestamp) {
+    if (currentMode !== MODE_MINIGAME_CATCH) return;
+    
+    const time = timestamp / 1000;
+    const data = miniGameData;
+    
+    // Move panda with keys
+    if (keysPressed.left) data.pandaX -= 8;
+    if (keysPressed.right) data.pandaX += 8;
+    data.pandaX = Math.max(30, Math.min(canvas.width - 30, data.pandaX));
+    
+    // Spawn bamboo
+    if (time - data.lastSpawn > 0.5) {
+        data.bamboos.push({
+            x: Math.random() * (canvas.width - 60) + 30,
+            y: -20,
+            speed: Math.random() * 3 + 2,
+            rotation: 0
+        });
+        data.lastSpawn = time;
+    }
+    
+    // Update bamboos
+    data.bamboos.forEach(b => {
+        b.y += b.speed;
+        b.rotation += 0.1;
+    });
+    
+    // Check catches
+    for (let i = data.bamboos.length - 1; i >= 0; i--) {
+        const b = data.bamboos[i];
+        if (b.y > canvas.height - 60 && Math.abs(b.x - data.pandaX) < 40) {
+            data.bamboos.splice(i, 1);
+            miniGameScore++;
+        } else if (b.y > canvas.height + 20) {
+            data.bamboos.splice(i, 1);
+        }
+    }
+    
+    // Draw
+    // Background
+    const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    gradient.addColorStop(0, '#1a472a');
+    gradient.addColorStop(1, '#0d2818');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Ground
+    ctx.fillStyle = '#2d5a3d';
+    ctx.fillRect(0, canvas.height - 40, canvas.width, 40);
+    
+    // Bamboos
+    data.bamboos.forEach(b => {
+        ctx.save();
+        ctx.translate(b.x, b.y);
+        ctx.rotate(b.rotation);
+        drawBambooItem(0, 0, 30);
+        ctx.restore();
+    });
+    
+    // Panda
+    drawCatchingPanda(data.pandaX, canvas.height - 60);
+    
+    // UI
+    ctx.font = 'bold 24px sans-serif';
+    ctx.fillStyle = '#fff';
+    ctx.textAlign = 'left';
+    ctx.fillText(`🎋 Score: ${miniGameScore}`, 20, 40);
+    ctx.fillText(`⏱️ Time: ${miniGameTimer}s`, 20, 70);
+    ctx.textAlign = 'right';
+    ctx.fillText(`🏆 Best: ${data.highScore}`, canvas.width - 20, 40);
+    
+    ctx.font = 'bold 32px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#4ade80';
+    ctx.fillText('🎋 BAMBOO CATCH 🎋', canvas.width / 2, 50);
+    
+    requestAnimationFrame(bambooCatchLoop);
+}
+
+function drawBambooItem(x, y, size) {
+    ctx.fillStyle = '#228B22';
+    ctx.fillRect(x - 5, y - size/2, 10, size);
+    ctx.fillStyle = '#32CD32';
+    ctx.fillRect(x - 3, y - size/2, 6, size);
+    // Leaves
+    ctx.fillStyle = '#90EE90';
+    ctx.beginPath();
+    ctx.ellipse(x + 8, y - size/3, 8, 4, 0.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(x - 8, y + size/4, 8, 4, -0.5, 0, Math.PI * 2);
+    ctx.fill();
+}
+
+function drawCatchingPanda(x, y) {
+    ctx.save();
+    ctx.translate(x, y);
+    
+    // Body
+    ctx.fillStyle = 'white';
+    ctx.beginPath();
+    ctx.ellipse(0, 15, 25, 30, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    
+    // Head
+    ctx.beginPath();
+    ctx.arc(0, -15, 22, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    
+    // Ears
+    ctx.fillStyle = 'black';
+    ctx.beginPath();
+    ctx.arc(-17, -32, 10, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(17, -32, 10, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Eye patches
+    ctx.beginPath();
+    ctx.ellipse(-9, -18, 8, 10, -0.3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(9, -18, 8, 10, 0.3, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Eyes looking up
+    ctx.fillStyle = 'white';
+    ctx.beginPath();
+    ctx.arc(-9, -20, 4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(9, -20, 4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = 'black';
+    ctx.beginPath();
+    ctx.arc(-9, -21, 2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(9, -21, 2, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Arms up to catch
+    ctx.fillStyle = 'black';
+    ctx.save();
+    ctx.translate(-25, 0);
+    ctx.rotate(-0.8);
+    ctx.beginPath();
+    ctx.ellipse(0, -15, 8, 18, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+    
+    ctx.save();
+    ctx.translate(25, 0);
+    ctx.rotate(0.8);
+    ctx.beginPath();
+    ctx.ellipse(0, -15, 8, 18, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+    
+    ctx.restore();
+}
+
+function endBambooCatch() {
+    const data = miniGameData;
+    if (miniGameScore > data.highScore) {
+        localStorage.setItem('bambooCatchHigh', miniGameScore.toString());
+        data.highScore = miniGameScore;
+    }
+    
+    currentMode = MODE_PARTY_HUB;
+    
+    overlay.innerHTML = `
+        <h2 style="color: #4ade80;">🎋 Bamboo Catch Complete!</h2>
+        <p style="font-size: 2rem;">Score: ${miniGameScore}</p>
+        <p>🏆 Best: ${data.highScore}</p>
+        <div class="overlay-buttons">
+            <button class="game-btn secondary" id="backBtn">BACK (ESC)</button>
+            <button class="game-btn" id="retryMiniBtn">PLAY AGAIN (ENTER)</button>
+        </div>
+    `;
+    overlay.classList.add('visible');
+    overlay.style.background = '';
+    overlay.style.boxShadow = '';
+    
+    document.getElementById('backBtn').onclick = startPartyHub;
+    document.getElementById('retryMiniBtn').onclick = startBambooCatch;
+}
+
+// ==================== MINI GAME: PANDA DANCE ====================
+function startPandaDance() {
+    currentMode = MODE_MINIGAME_DANCE;
+    miniGameScore = 0;
+    miniGameTimer = 30;
+    partyStartTime = performance.now() / 1000;
+    miniGameData = {
+        arrows: [],
+        lastSpawn: 0,
+        combo: 0,
+        maxCombo: 0,
+        hitZoneY: canvas.height - 100,
+        highScore: parseInt(localStorage.getItem('pandaDanceHigh') || '0'),
+        lastHit: '',
+        hitTime: 0
+    };
+    
+    overlay.classList.remove('visible');
+    requestAnimationFrame(pandaDanceLoop);
+    
+    const timerInterval = setInterval(() => {
+        if (currentMode !== MODE_MINIGAME_DANCE) {
+            clearInterval(timerInterval);
+            return;
+        }
+        miniGameTimer--;
+        if (miniGameTimer <= 0) {
+            clearInterval(timerInterval);
+            endPandaDance();
+        }
+    }, 1000);
+}
+
+function pandaDanceLoop(timestamp) {
+    if (currentMode !== MODE_MINIGAME_DANCE) return;
+    
+    const time = timestamp / 1000;
+    const data = miniGameData;
+    
+    // Spawn arrows
+    if (time - data.lastSpawn > 0.8) {
+        const directions = ['up', 'down', 'left', 'right'];
+        const dir = directions[Math.floor(Math.random() * 4)];
+        data.arrows.push({
+            direction: dir,
+            y: -50,
+            speed: 4,
+            hit: false
+        });
+        data.lastSpawn = time;
+    }
+    
+    // Update arrows
+    data.arrows.forEach(a => {
+        if (!a.hit) a.y += a.speed;
+    });
+    
+    // Remove off-screen arrows (missed)
+    for (let i = data.arrows.length - 1; i >= 0; i--) {
+        if (data.arrows[i].y > canvas.height + 50 && !data.arrows[i].hit) {
+            data.arrows.splice(i, 1);
+            data.combo = 0;
+        } else if (data.arrows[i].hit && data.arrows[i].y > canvas.height + 50) {
+            data.arrows.splice(i, 1);
+        }
+    }
+    
+    // Draw
+    // Background - disco style
+    const hue = (time * 50) % 360;
+    ctx.fillStyle = `hsl(${hue}, 30%, 15%)`;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Dance floor pattern
+    for (let i = 0; i < 8; i++) {
+        for (let j = 0; j < 6; j++) {
+            const tileHue = (hue + i * 20 + j * 30) % 360;
+            ctx.fillStyle = `hsla(${tileHue}, 50%, 30%, 0.3)`;
+            ctx.fillRect(i * 100, j * 80, 100, 80);
+        }
+    }
+    
+    // Hit zone
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+    ctx.fillRect(0, data.hitZoneY - 30, canvas.width, 60);
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(0, data.hitZoneY - 30, canvas.width, 60);
+    
+    // Target arrows
+    const arrowColors = { up: '#ff6b6b', down: '#4ecdc4', left: '#ffe66d', right: '#95e1d3' };
+    const arrowSymbols = { up: '↑', down: '↓', left: '←', right: '→' };
+    const laneX = { left: 150, down: 300, up: 450, right: 600 };
+    
+    // Draw lane guides
+    Object.keys(laneX).forEach(dir => {
+        ctx.strokeStyle = arrowColors[dir];
+        ctx.lineWidth = 2;
+        ctx.globalAlpha = 0.3;
+        ctx.beginPath();
+        ctx.moveTo(laneX[dir], 0);
+        ctx.lineTo(laneX[dir], canvas.height);
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+        
+        // Target zone indicators
+        ctx.font = 'bold 40px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillStyle = 'rgba(255,255,255,0.3)';
+        ctx.fillText(arrowSymbols[dir], laneX[dir], data.hitZoneY + 10);
+    });
+    
+    // Draw falling arrows
+    data.arrows.forEach(a => {
+        if (!a.hit) {
+            ctx.font = 'bold 50px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillStyle = arrowColors[a.direction];
+            ctx.fillText(arrowSymbols[a.direction], laneX[a.direction], a.y);
+        }
+    });
+    
+    // Hit feedback
+    if (time - data.hitTime < 0.3 && data.lastHit) {
+        ctx.font = 'bold 30px sans-serif';
+        ctx.fillStyle = data.lastHit === 'PERFECT!' ? '#ffd700' : (data.lastHit === 'GOOD!' ? '#4ade80' : '#ff6b6b');
+        ctx.fillText(data.lastHit, canvas.width / 2, data.hitZoneY - 50);
+    }
+    
+    // Dancing panda
+    const bounce = Math.sin(time * 8) * 10;
+    drawSmallDancingPanda(canvas.width / 2, canvas.height - 50 + bounce, time);
+    
+    // UI
+    ctx.font = 'bold 24px sans-serif';
+    ctx.fillStyle = '#fff';
+    ctx.textAlign = 'left';
+    ctx.fillText(`⭐ Score: ${miniGameScore}`, 20, 40);
+    ctx.fillText(`🔥 Combo: ${data.combo}`, 20, 70);
+    ctx.textAlign = 'right';
+    ctx.fillText(`⏱️ ${miniGameTimer}s`, canvas.width - 20, 40);
+    ctx.fillText(`🏆 Best: ${data.highScore}`, canvas.width - 20, 70);
+    
+    ctx.font = 'bold 28px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#f472b6';
+    ctx.fillText('💃 PANDA DANCE 💃', canvas.width / 2, 50);
+    
+    requestAnimationFrame(pandaDanceLoop);
+}
+
+function checkDanceHit(direction) {
+    if (currentMode !== MODE_MINIGAME_DANCE) return;
+    
+    const data = miniGameData;
+    const time = performance.now() / 1000;
+    
+    for (let i = 0; i < data.arrows.length; i++) {
+        const a = data.arrows[i];
+        if (a.direction === direction && !a.hit) {
+            const dist = Math.abs(a.y - data.hitZoneY);
+            if (dist < 20) {
+                // Perfect hit
+                a.hit = true;
+                miniGameScore += 100 + data.combo * 10;
+                data.combo++;
+                data.maxCombo = Math.max(data.maxCombo, data.combo);
+                data.lastHit = 'PERFECT!';
+                data.hitTime = time;
+                return;
+            } else if (dist < 50) {
+                // Good hit
+                a.hit = true;
+                miniGameScore += 50 + data.combo * 5;
+                data.combo++;
+                data.maxCombo = Math.max(data.maxCombo, data.combo);
+                data.lastHit = 'GOOD!';
+                data.hitTime = time;
+                return;
+            }
+        }
+    }
+    // Miss
+    data.combo = 0;
+    data.lastHit = 'MISS!';
+    data.hitTime = time;
+}
+
+function endPandaDance() {
+    const data = miniGameData;
+    if (miniGameScore > data.highScore) {
+        localStorage.setItem('pandaDanceHigh', miniGameScore.toString());
+        data.highScore = miniGameScore;
+    }
+    
+    currentMode = MODE_PARTY_HUB;
+    
+    overlay.innerHTML = `
+        <h2 style="color: #f472b6;">💃 Panda Dance Complete!</h2>
+        <p style="font-size: 2rem;">Score: ${miniGameScore}</p>
+        <p>🔥 Max Combo: ${data.maxCombo} | 🏆 Best: ${data.highScore}</p>
+        <div class="overlay-buttons">
+            <button class="game-btn secondary" id="backBtn">BACK (ESC)</button>
+            <button class="game-btn" id="retryMiniBtn">PLAY AGAIN (ENTER)</button>
+        </div>
+    `;
+    overlay.classList.add('visible');
+    overlay.style.background = '';
+    overlay.style.boxShadow = '';
+    
+    document.getElementById('backBtn').onclick = startPartyHub;
+    document.getElementById('retryMiniBtn').onclick = startPandaDance;
+}
+
+// ==================== MINI GAME: MEMORY MATCH ====================
+function startMemoryMatch() {
+    currentMode = MODE_MINIGAME_MEMORY;
+    miniGameScore = 0;
+    partyStartTime = performance.now() / 1000;
+    
+    // Create card pairs
+    const emojis = ['🐼', '🎋', '🌸', '⭐', '🎉', '💎', '🌈', '🍀'];
+    const cards = [...emojis, ...emojis];
+    
+    // Shuffle
+    for (let i = cards.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [cards[i], cards[j]] = [cards[j], cards[i]];
+    }
+    
+    miniGameData = {
+        cards: cards.map((emoji, i) => ({ emoji, flipped: false, matched: false, index: i })),
+        selected: [],
+        moves: 0,
+        matches: 0,
+        canClick: true,
+        highScore: parseInt(localStorage.getItem('memoryMatchHigh') || '999'),
+        selectedIndex: 0
+    };
+    
+    overlay.classList.remove('visible');
+    requestAnimationFrame(memoryMatchLoop);
+}
+
+function memoryMatchLoop(timestamp) {
+    if (currentMode !== MODE_MINIGAME_MEMORY) return;
+    
+    const time = timestamp / 1000 - partyStartTime;
+    const data = miniGameData;
+    
+    // Background
+    const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    gradient.addColorStop(0, '#1e3a5f');
+    gradient.addColorStop(1, '#0d1b2a');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Stars background
+    for (let i = 0; i < 30; i++) {
+        const starX = (Math.sin(i * 123.456) * 0.5 + 0.5) * canvas.width;
+        const starY = (Math.cos(i * 789.123) * 0.5 + 0.5) * canvas.height;
+        const twinkle = Math.sin(time * 3 + i) * 0.5 + 0.5;
+        ctx.fillStyle = `rgba(255, 255, 255, ${twinkle * 0.5})`;
+        ctx.beginPath();
+        ctx.arc(starX, starY, 2, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    
+    // Title
+    ctx.font = 'bold 28px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#60a5fa';
+    ctx.fillText('🧠 MEMORY MATCH 🧠', canvas.width / 2, 45);
+    
+    // Draw cards
+    const cols = 4;
+    const rows = 4;
+    const cardWidth = 90;
+    const cardHeight = 100;
+    const gap = 15;
+    const startX = (canvas.width - (cols * cardWidth + (cols - 1) * gap)) / 2;
+    const startY = 80;
+    
+    data.cards.forEach((card, i) => {
+        const col = i % cols;
+        const row = Math.floor(i / cols);
+        const x = startX + col * (cardWidth + gap);
+        const y = startY + row * (cardHeight + gap);
+        
+        const isSelected = i === data.selectedIndex;
+        const bounce = (card.flipped || card.matched) ? Math.sin(time * 5) * 2 : 0;
+        
+        // Card shadow
+        ctx.fillStyle = 'rgba(0,0,0,0.3)';
+        ctx.fillRect(x + 3, y + 3 + bounce, cardWidth, cardHeight);
+        
+        // Card
+        if (card.flipped || card.matched) {
+            ctx.fillStyle = card.matched ? '#4ade80' : '#fff';
+            ctx.fillRect(x, y + bounce, cardWidth, cardHeight);
+            
+            // Emoji
+            ctx.font = '40px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(card.emoji, x + cardWidth / 2, y + cardHeight / 2 + 15 + bounce);
+        } else {
+            // Card back
+            const cardGradient = ctx.createLinearGradient(x, y, x + cardWidth, y + cardHeight);
+            cardGradient.addColorStop(0, '#6366f1');
+            cardGradient.addColorStop(1, '#4338ca');
+            ctx.fillStyle = cardGradient;
+            ctx.fillRect(x, y, cardWidth, cardHeight);
+            
+            // Pattern
+            ctx.fillStyle = 'rgba(255,255,255,0.1)';
+            ctx.font = '30px sans-serif';
+            ctx.fillText('?', x + cardWidth / 2, y + cardHeight / 2 + 10);
+        }
+        
+        // Selection highlight
+        if (isSelected) {
+            ctx.strokeStyle = '#ffd700';
+            ctx.lineWidth = 4;
+            ctx.strokeRect(x - 2, y - 2 + bounce, cardWidth + 4, cardHeight + 4);
+        }
+    });
+    
+    // UI
+    ctx.font = 'bold 20px sans-serif';
+    ctx.fillStyle = '#fff';
+    ctx.textAlign = 'left';
+    ctx.fillText(`🎯 Moves: ${data.moves}`, 20, canvas.height - 40);
+    ctx.fillText(`✨ Matches: ${data.matches}/8`, 20, canvas.height - 15);
+    ctx.textAlign = 'right';
+    ctx.fillText(`🏆 Best: ${data.highScore === 999 ? '-' : data.highScore} moves`, canvas.width - 20, canvas.height - 40);
+    
+    ctx.textAlign = 'center';
+    ctx.font = '16px sans-serif';
+    ctx.fillStyle = '#aaa';
+    ctx.fillText('Arrow keys to select | ENTER to flip', canvas.width / 2, canvas.height - 15);
+    
+    requestAnimationFrame(memoryMatchLoop);
+}
+
+function flipMemoryCard() {
+    if (currentMode !== MODE_MINIGAME_MEMORY) return;
+    
+    const data = miniGameData;
+    if (!data.canClick) return;
+    
+    const card = data.cards[data.selectedIndex];
+    if (card.flipped || card.matched) return;
+    
+    card.flipped = true;
+    data.selected.push(data.selectedIndex);
+    
+    if (data.selected.length === 2) {
+        data.moves++;
+        data.canClick = false;
+        
+        const card1 = data.cards[data.selected[0]];
+        const card2 = data.cards[data.selected[1]];
+        
+        if (card1.emoji === card2.emoji) {
+            // Match!
+            card1.matched = true;
+            card2.matched = true;
+            data.matches++;
+            data.selected = [];
+            data.canClick = true;
+            
+            if (data.matches === 8) {
+                setTimeout(() => endMemoryMatch(), 500);
+            }
+        } else {
+            // No match - flip back
+            setTimeout(() => {
+                card1.flipped = false;
+                card2.flipped = false;
+                data.selected = [];
+                data.canClick = true;
+            }, 1000);
+        }
+    }
+}
+
+function endMemoryMatch() {
+    const data = miniGameData;
+    if (data.moves < data.highScore) {
+        localStorage.setItem('memoryMatchHigh', data.moves.toString());
+        data.highScore = data.moves;
+    }
+    
+    currentMode = MODE_PARTY_HUB;
+    
+    overlay.innerHTML = `
+        <h2 style="color: #60a5fa;">🧠 Memory Match Complete!</h2>
+        <p style="font-size: 2rem;">Moves: ${data.moves}</p>
+        <p>🏆 Best: ${data.highScore} moves</p>
+        <div class="overlay-buttons">
+            <button class="game-btn secondary" id="backBtn">BACK (ESC)</button>
+            <button class="game-btn" id="retryMiniBtn">PLAY AGAIN (ENTER)</button>
+        </div>
+    `;
+    overlay.classList.add('visible');
+    overlay.style.background = '';
+    overlay.style.boxShadow = '';
+    
+    document.getElementById('backBtn').onclick = startPartyHub;
+    document.getElementById('retryMiniBtn').onclick = startMemoryMatch;
 }
 
 function gameOver() {
