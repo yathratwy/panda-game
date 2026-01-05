@@ -22,6 +22,8 @@ const MODE_MINIGAME_MEMORY = 'minigame_memory';
 const MODE_MINIGAME_RUNNER = 'minigame_runner';
 const MODE_MINIGAME_BALLOON = 'minigame_balloon';
 const MODE_MINIGAME_PONG = 'minigame_pong';
+const MODE_MINIGAME_WHACK = 'minigame_whack';
+const MODE_MINIGAME_STACK = 'minigame_stack';
 let currentMode = MODE_MAP;
 
 // Party/Confetti system
@@ -289,6 +291,16 @@ function handleKeyDown(e) {
         return;
     }
     
+    if (currentMode === MODE_MINIGAME_WHACK) {
+        handleWhackKeys(key);
+        return;
+    }
+    
+    if (currentMode === MODE_MINIGAME_STACK) {
+        handleStackKeys(key);
+        return;
+    }
+    
     if (overlay.classList.contains('visible')) {
         handleOverlayKeys(key);
     } else if (currentMode === MODE_MAP) {
@@ -380,7 +392,8 @@ function handlePartyHubKeys(key) {
         return;
     }
     
-    const cols = 3;
+    // Navigation for 4x2 grid layout
+    const cols = 4;
     if (key === 'ArrowLeft' || key === 'a' || key === 'A') {
         selectedMiniGame = (selectedMiniGame - 1 + miniGames.length) % miniGames.length;
     }
@@ -388,10 +401,14 @@ function handlePartyHubKeys(key) {
         selectedMiniGame = (selectedMiniGame + 1) % miniGames.length;
     }
     if (key === 'ArrowUp' || key === 'w' || key === 'W') {
-        selectedMiniGame = (selectedMiniGame - cols + miniGames.length) % miniGames.length;
+        if (selectedMiniGame >= cols) {
+            selectedMiniGame -= cols;
+        }
     }
     if (key === 'ArrowDown' || key === 's' || key === 'S') {
-        selectedMiniGame = (selectedMiniGame + cols) % miniGames.length;
+        if (selectedMiniGame < miniGames.length - cols) {
+            selectedMiniGame += cols;
+        }
     }
     if (key === 'Enter' || key === ' ') {
         launchSelectedMiniGame();
@@ -420,6 +437,14 @@ function handlePartyHubKeys(key) {
         selectedMiniGame = 5;
         launchSelectedMiniGame();
     }
+    if (key === '7') {
+        selectedMiniGame = 6;
+        launchSelectedMiniGame();
+    }
+    if (key === '8') {
+        selectedMiniGame = 7;
+        launchSelectedMiniGame();
+    }
     if (key === 'Escape' || key === 'm' || key === 'M') {
         exitParty();
     }
@@ -433,6 +458,8 @@ function launchSelectedMiniGame() {
         case 3: startPandaRunner(); break;
         case 4: startBalloonPop(); break;
         case 5: startPandaPong(); break;
+        case 6: startWhackAJaguar(); break;
+        case 7: startPandaStack(); break;
     }
 }
 
@@ -1663,7 +1690,9 @@ const miniGames = [
     { id: 'memory', name: 'Memory Match', icon: '🧠', desc: 'Find the pairs!', color: '#60a5fa' },
     { id: 'runner', name: 'Panda Run', icon: '🏃', desc: 'Jump over obstacles!', color: '#fbbf24' },
     { id: 'balloon', name: 'Balloon Pop', icon: '🎈', desc: 'Pop the balloons!', color: '#ef4444' },
-    { id: 'pong', name: 'Panda Pong', icon: '🏓', desc: 'Beat the computer!', color: '#8b5cf6' }
+    { id: 'pong', name: 'Panda Pong', icon: '🏓', desc: 'Beat the computer!', color: '#8b5cf6' },
+    { id: 'whack', name: 'Whack-a-Jaguar', icon: '🔨', desc: 'Bonk the jaguars!', color: '#f97316' },
+    { id: 'stack', name: 'Panda Stack', icon: '🐼', desc: 'Stack the pandas!', color: '#10b981' }
 ];
 
 function startPartyHub() {
@@ -1701,20 +1730,21 @@ function partyHubLoop(timestamp) {
     ctx.fillStyle = '#ffd700';
     ctx.fillText('Choose a mini-game to play!', canvas.width / 2, 110);
     
-    // Draw mini-game cards in 2 rows of 3
-    const cardWidth = 140;
-    const cardHeight = 150;
-    const cols = 3;
-    const gap = 20;
-    const totalWidth = cols * cardWidth + (cols - 1) * gap;
-    const startX = (canvas.width - totalWidth) / 2;
-    const startY = 130;
-    const rowGap = 20;
+    // Draw mini-game cards in 2 rows (4 on top, 3 on bottom)
+    const cardWidth = 130;
+    const cardHeight = 140;
+    const gap = 15;
+    const startY = 125;
+    const rowGap = 15;
     
     miniGames.forEach((game, index) => {
+        // 4x2 grid layout
+        const cols = 4;
         const row = Math.floor(index / cols);
         const col = index % cols;
-        const cardX = startX + col * (cardWidth + gap);
+        const totalRowWidth = cols * cardWidth + (cols - 1) * gap;
+        const rowStartX = (canvas.width - totalRowWidth) / 2;
+        const cardX = rowStartX + col * (cardWidth + gap);
         const cardY = startY + row * (cardHeight + rowGap);
         const isSelected = index === selectedMiniGame;
         const hoverBounce = isSelected ? Math.sin(time * 6) * 5 : 0;
@@ -3194,6 +3224,722 @@ function endPandaPong() {
     
     document.getElementById('backBtn').onclick = startPartyHub;
     document.getElementById('retryMiniBtn').onclick = startPandaPong;
+}
+
+// ==================== MINI GAME: WHACK-A-JAGUAR ====================
+function startWhackAJaguar() {
+    currentMode = MODE_MINIGAME_WHACK;
+    miniGameScore = 0;
+    miniGameTimer = 30;
+    partyStartTime = performance.now() / 1000;
+    
+    // Create 9 holes in a 3x3 grid
+    const holes = [];
+    for (let row = 0; row < 3; row++) {
+        for (let col = 0; col < 3; col++) {
+            holes.push({
+                x: 180 + col * 180,
+                y: 150 + row * 120,
+                hasJaguar: false,
+                jaguarTimer: 0,
+                whacked: false,
+                whackTimer: 0
+            });
+        }
+    }
+    
+    miniGameData = {
+        holes: holes,
+        selectedHole: 4, // Center hole
+        lastSpawn: 0,
+        whacks: 0,
+        misses: 0,
+        highScore: parseInt(localStorage.getItem('whackJaguarHigh') || '0'),
+        combo: 0,
+        maxCombo: 0
+    };
+    
+    overlay.classList.remove('visible');
+    requestAnimationFrame(whackAJaguarLoop);
+    
+    const timerInterval = setInterval(() => {
+        if (currentMode !== MODE_MINIGAME_WHACK) {
+            clearInterval(timerInterval);
+            return;
+        }
+        miniGameTimer--;
+        if (miniGameTimer <= 0) {
+            clearInterval(timerInterval);
+            endWhackAJaguar();
+        }
+    }, 1000);
+}
+
+function whackAJaguarLoop(timestamp) {
+    if (currentMode !== MODE_MINIGAME_WHACK) return;
+    
+    const time = timestamp / 1000;
+    const data = miniGameData;
+    
+    // Spawn jaguars randomly
+    if (time - data.lastSpawn > 0.8 - Math.min(miniGameScore / 200, 0.4)) {
+        // Find empty holes
+        const emptyHoles = data.holes.filter(h => !h.hasJaguar && !h.whacked);
+        if (emptyHoles.length > 0) {
+            const hole = emptyHoles[Math.floor(Math.random() * emptyHoles.length)];
+            hole.hasJaguar = true;
+            hole.jaguarTimer = time;
+            hole.popHeight = 0;
+        }
+        data.lastSpawn = time;
+    }
+    
+    // Update jaguars
+    data.holes.forEach(hole => {
+        if (hole.hasJaguar) {
+            // Pop up animation
+            const timeSinceSpawn = time - hole.jaguarTimer;
+            if (timeSinceSpawn < 0.2) {
+                hole.popHeight = (timeSinceSpawn / 0.2) * 50;
+            } else {
+                hole.popHeight = 50;
+            }
+            
+            // Jaguar disappears after a while
+            if (timeSinceSpawn > 1.5) {
+                hole.hasJaguar = false;
+                hole.popHeight = 0;
+                data.combo = 0; // Reset combo on miss
+            }
+        }
+        
+        // Whack animation
+        if (hole.whacked) {
+            if (time - hole.whackTimer > 0.3) {
+                hole.whacked = false;
+            }
+        }
+    });
+    
+    // Draw
+    // Background - grassy field
+    const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    gradient.addColorStop(0, '#87CEEB');
+    gradient.addColorStop(0.3, '#90EE90');
+    gradient.addColorStop(1, '#228B22');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Draw dirt mounds
+    ctx.fillStyle = '#8B4513';
+    data.holes.forEach(hole => {
+        // Dirt mound
+        ctx.beginPath();
+        ctx.ellipse(hole.x, hole.y + 30, 60, 25, 0, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Hole
+        ctx.fillStyle = '#3d2817';
+        ctx.beginPath();
+        ctx.ellipse(hole.x, hole.y + 20, 45, 20, 0, 0, Math.PI * 2);
+        ctx.fill();
+        
+        ctx.fillStyle = '#8B4513';
+    });
+    
+    // Draw jaguars and selection
+    data.holes.forEach((hole, index) => {
+        const isSelected = index === data.selectedHole;
+        
+        // Draw jaguar if present
+        if (hole.hasJaguar && !hole.whacked) {
+            drawWhackJaguar(hole.x, hole.y - hole.popHeight + 20, time);
+        }
+        
+        // Whack effect
+        if (hole.whacked) {
+            ctx.font = 'bold 30px sans-serif';
+            ctx.fillStyle = '#ffd700';
+            ctx.textAlign = 'center';
+            ctx.fillText('💥', hole.x, hole.y - 30);
+            ctx.fillText(`+${10 + data.combo * 5}`, hole.x, hole.y - 60);
+        }
+        
+        // Selection indicator
+        if (isSelected) {
+            // Hammer cursor
+            ctx.save();
+            ctx.translate(hole.x + 30, hole.y - 20);
+            ctx.rotate(-0.3 + Math.sin(time * 10) * 0.1);
+            ctx.font = '40px sans-serif';
+            ctx.fillText('🔨', -20, 0);
+            ctx.restore();
+            
+            // Selection ring
+            ctx.strokeStyle = '#ffd700';
+            ctx.lineWidth = 3;
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            ctx.ellipse(hole.x, hole.y + 20, 50, 25, 0, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.setLineDash([]);
+        }
+    });
+    
+    // Draw grass tufts on top
+    ctx.fillStyle = '#32CD32';
+    for (let i = 0; i < 20; i++) {
+        const gx = (i * 47 + 30) % canvas.width;
+        const gy = 100 + (i * 23) % 300;
+        ctx.beginPath();
+        ctx.moveTo(gx, gy);
+        ctx.lineTo(gx - 5, gy - 15);
+        ctx.lineTo(gx + 5, gy - 15);
+        ctx.fill();
+    }
+    
+    // UI
+    ctx.font = 'bold 28px sans-serif';
+    ctx.fillStyle = '#fff';
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 3;
+    ctx.textAlign = 'left';
+    ctx.strokeText(`🎯 Score: ${miniGameScore}`, 20, 40);
+    ctx.fillText(`🎯 Score: ${miniGameScore}`, 20, 40);
+    ctx.strokeText(`⏱️ ${miniGameTimer}s`, 20, 75);
+    ctx.fillText(`⏱️ ${miniGameTimer}s`, 20, 75);
+    
+    ctx.textAlign = 'right';
+    ctx.strokeText(`🏆 Best: ${data.highScore}`, canvas.width - 20, 40);
+    ctx.fillText(`🏆 Best: ${data.highScore}`, canvas.width - 20, 40);
+    ctx.strokeText(`🔥 Combo: ${data.combo}`, canvas.width - 20, 75);
+    ctx.fillText(`🔥 Combo: ${data.combo}`, canvas.width - 20, 75);
+    
+    // Title
+    ctx.font = 'bold 32px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#f97316';
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 4;
+    ctx.strokeText('🔨 WHACK-A-JAGUAR 🐆', canvas.width / 2, 45);
+    ctx.fillText('🔨 WHACK-A-JAGUAR 🐆', canvas.width / 2, 45);
+    
+    // Instructions
+    ctx.font = '16px sans-serif';
+    ctx.fillStyle = '#fff';
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 2;
+    ctx.strokeText('Arrow keys to move | SPACE to whack!', canvas.width / 2, canvas.height - 20);
+    ctx.fillText('Arrow keys to move | SPACE to whack!', canvas.width / 2, canvas.height - 20);
+    
+    requestAnimationFrame(whackAJaguarLoop);
+}
+
+function drawWhackJaguar(x, y, time) {
+    ctx.save();
+    ctx.translate(x, y);
+    
+    // Body/head
+    ctx.fillStyle = '#D4A017';
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 30, 35, 0, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Spots
+    ctx.fillStyle = '#8B4513';
+    const spots = [[-15, -10], [10, -15], [-10, 10], [15, 5], [0, -5]];
+    spots.forEach(([sx, sy]) => {
+        ctx.beginPath();
+        ctx.arc(sx, sy, 5, 0, Math.PI * 2);
+        ctx.fill();
+    });
+    
+    // Ears
+    ctx.fillStyle = '#D4A017';
+    ctx.beginPath();
+    ctx.ellipse(-20, -25, 10, 8, -0.3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(20, -25, 10, 8, 0.3, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Inner ears
+    ctx.fillStyle = '#FFC0CB';
+    ctx.beginPath();
+    ctx.ellipse(-20, -25, 5, 4, -0.3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(20, -25, 5, 4, 0.3, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Eyes (angry!)
+    ctx.fillStyle = '#fff';
+    ctx.beginPath();
+    ctx.ellipse(-10, -8, 8, 10, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(10, -8, 8, 10, 0, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Pupils
+    ctx.fillStyle = '#000';
+    ctx.beginPath();
+    ctx.arc(-10, -6, 4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(10, -6, 4, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Angry eyebrows
+    ctx.strokeStyle = '#000';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(-18, -18);
+    ctx.lineTo(-5, -15);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(18, -18);
+    ctx.lineTo(5, -15);
+    ctx.stroke();
+    
+    // Nose
+    ctx.fillStyle = '#000';
+    ctx.beginPath();
+    ctx.ellipse(0, 5, 6, 4, 0, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Mean grin
+    ctx.strokeStyle = '#000';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(0, 10, 12, 0.1 * Math.PI, 0.9 * Math.PI);
+    ctx.stroke();
+    
+    // Teeth
+    ctx.fillStyle = '#fff';
+    ctx.beginPath();
+    ctx.moveTo(-8, 15);
+    ctx.lineTo(-5, 22);
+    ctx.lineTo(-2, 15);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(2, 15);
+    ctx.lineTo(5, 22);
+    ctx.lineTo(8, 15);
+    ctx.fill();
+    
+    ctx.restore();
+}
+
+function handleWhackKeys(key) {
+    if (key === 'Escape') {
+        endWhackAJaguar();
+        return;
+    }
+    
+    const data = miniGameData;
+    const cols = 3;
+    
+    // Movement in 3x3 grid
+    if (key === 'ArrowLeft' || key === 'a' || key === 'A') {
+        if (data.selectedHole % cols > 0) data.selectedHole--;
+    }
+    if (key === 'ArrowRight' || key === 'd' || key === 'D') {
+        if (data.selectedHole % cols < cols - 1) data.selectedHole++;
+    }
+    if (key === 'ArrowUp' || key === 'w' || key === 'W') {
+        if (data.selectedHole >= cols) data.selectedHole -= cols;
+    }
+    if (key === 'ArrowDown' || key === 's' || key === 'S') {
+        if (data.selectedHole < 6) data.selectedHole += cols;
+    }
+    
+    // Whack!
+    if (key === ' ' || key === 'Enter') {
+        const hole = data.holes[data.selectedHole];
+        if (hole.hasJaguar && !hole.whacked) {
+            // Hit!
+            hole.hasJaguar = false;
+            hole.whacked = true;
+            hole.whackTimer = performance.now() / 1000;
+            hole.popHeight = 0;
+            data.whacks++;
+            data.combo++;
+            data.maxCombo = Math.max(data.maxCombo, data.combo);
+            miniGameScore += 10 + data.combo * 5;
+        } else {
+            // Miss!
+            data.misses++;
+            data.combo = 0;
+        }
+    }
+}
+
+function endWhackAJaguar() {
+    const data = miniGameData;
+    if (miniGameScore > data.highScore) {
+        localStorage.setItem('whackJaguarHigh', miniGameScore.toString());
+        data.highScore = miniGameScore;
+    }
+    
+    currentMode = MODE_PARTY_HUB;
+    
+    overlay.innerHTML = `
+        <h2 style="color: #f97316;">🔨 Whack-a-Jaguar Complete!</h2>
+        <p style="font-size: 2rem;">Score: ${miniGameScore}</p>
+        <p>🎯 Whacks: ${data.whacks} | 🔥 Max Combo: ${data.maxCombo}</p>
+        <p>🏆 Best: ${data.highScore}</p>
+        <div class="overlay-buttons">
+            <button class="game-btn secondary" id="backBtn">BACK (ESC)</button>
+            <button class="game-btn" id="retryMiniBtn">PLAY AGAIN (ENTER)</button>
+        </div>
+    `;
+    overlay.classList.add('visible');
+    overlay.style.background = '';
+    overlay.style.boxShadow = '';
+    
+    document.getElementById('backBtn').onclick = startPartyHub;
+    document.getElementById('retryMiniBtn').onclick = startWhackAJaguar;
+}
+
+// ==================== MINI GAME: PANDA STACK ====================
+function startPandaStack() {
+    currentMode = MODE_MINIGAME_STACK;
+    miniGameScore = 0;
+    partyStartTime = performance.now() / 1000;
+    
+    miniGameData = {
+        stackedPandas: [{ x: canvas.width / 2, y: canvas.height - 60, width: 60, landed: true }],
+        currentPanda: null,
+        swingX: 0,
+        swingDirection: 1,
+        swingSpeed: 3,
+        dropSpeed: 0,
+        isDropping: false,
+        gameOver: false,
+        highScore: parseInt(localStorage.getItem('pandaStackHigh') || '0'),
+        perfectStreak: 0
+    };
+    
+    spawnStackPanda();
+    
+    overlay.classList.remove('visible');
+    requestAnimationFrame(pandaStackLoop);
+}
+
+function spawnStackPanda() {
+    const data = miniGameData;
+    const topPanda = data.stackedPandas[data.stackedPandas.length - 1];
+    
+    data.currentPanda = {
+        x: 0,
+        y: topPanda.y - 55,
+        width: Math.max(30, topPanda.width - 2), // Slightly smaller each time
+        swingOffset: 0
+    };
+    data.swingX = 0;
+    data.isDropping = false;
+    data.dropSpeed = 0;
+    
+    // Speed up as stack grows
+    data.swingSpeed = 3 + data.stackedPandas.length * 0.3;
+}
+
+function pandaStackLoop(timestamp) {
+    if (currentMode !== MODE_MINIGAME_STACK) return;
+    
+    const time = timestamp / 1000 - partyStartTime;
+    const data = miniGameData;
+    
+    if (!data.gameOver) {
+        if (!data.isDropping && data.currentPanda) {
+            // Swing the panda
+            data.swingX += data.swingSpeed * data.swingDirection;
+            if (data.swingX > 250 || data.swingX < -250) {
+                data.swingDirection *= -1;
+            }
+            data.currentPanda.x = canvas.width / 2 + data.swingX;
+        } else if (data.isDropping && data.currentPanda) {
+            // Drop the panda
+            data.dropSpeed += 0.5;
+            data.currentPanda.y += data.dropSpeed;
+            
+            const topPanda = data.stackedPandas[data.stackedPandas.length - 1];
+            
+            // Check if landed
+            if (data.currentPanda.y >= topPanda.y - 50) {
+                data.currentPanda.y = topPanda.y - 50;
+                
+                // Check overlap
+                const overlap = calculateOverlap(data.currentPanda, topPanda);
+                
+                if (overlap > 10) {
+                    // Successful stack!
+                    const newWidth = overlap;
+                    const newX = Math.max(data.currentPanda.x, topPanda.x - topPanda.width/2 + newWidth/2);
+                    
+                    data.stackedPandas.push({
+                        x: (data.currentPanda.x + topPanda.x) / 2,
+                        y: data.currentPanda.y,
+                        width: newWidth,
+                        landed: true
+                    });
+                    
+                    // Perfect bonus
+                    if (overlap >= topPanda.width * 0.9) {
+                        data.perfectStreak++;
+                        miniGameScore += 50 + data.perfectStreak * 20;
+                    } else {
+                        data.perfectStreak = 0;
+                        miniGameScore += Math.floor(overlap);
+                    }
+                    
+                    spawnStackPanda();
+                } else {
+                    // Missed! Game over
+                    data.gameOver = true;
+                    setTimeout(() => endPandaStack(), 1000);
+                }
+            }
+        }
+    }
+    
+    // Draw
+    // Sky background
+    const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    gradient.addColorStop(0, '#1a1a3e');
+    gradient.addColorStop(0.5, '#4a2c7a');
+    gradient.addColorStop(1, '#ff6b8a');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Stars
+    for (let i = 0; i < 50; i++) {
+        const starX = (i * 97) % canvas.width;
+        const starY = (i * 53) % (canvas.height / 2);
+        const twinkle = Math.sin(time * 3 + i) * 0.5 + 0.5;
+        ctx.fillStyle = `rgba(255, 255, 255, ${twinkle})`;
+        ctx.beginPath();
+        ctx.arc(starX, starY, 1 + twinkle, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    
+    // Ground
+    ctx.fillStyle = '#2d5a27';
+    ctx.fillRect(0, canvas.height - 40, canvas.width, 40);
+    
+    // Draw stacked pandas
+    data.stackedPandas.forEach((panda, index) => {
+        drawStackedPanda(panda.x, panda.y, panda.width, index, time);
+    });
+    
+    // Draw current (swinging/dropping) panda
+    if (data.currentPanda && !data.gameOver) {
+        // Draw rope/line
+        ctx.strokeStyle = '#8B4513';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(data.currentPanda.x, 0);
+        ctx.lineTo(data.currentPanda.x, data.currentPanda.y - 25);
+        ctx.stroke();
+        
+        drawStackedPanda(data.currentPanda.x, data.currentPanda.y, data.currentPanda.width, data.stackedPandas.length, time);
+    }
+    
+    // UI
+    ctx.font = 'bold 28px sans-serif';
+    ctx.fillStyle = '#fff';
+    ctx.textAlign = 'left';
+    ctx.fillText(`🐼 Stack: ${data.stackedPandas.length}`, 20, 40);
+    ctx.fillText(`⭐ Score: ${miniGameScore}`, 20, 75);
+    
+    ctx.textAlign = 'right';
+    ctx.fillText(`🏆 Best: ${data.highScore}`, canvas.width - 20, 40);
+    if (data.perfectStreak > 0) {
+        ctx.fillStyle = '#ffd700';
+        ctx.fillText(`🔥 Perfect x${data.perfectStreak}!`, canvas.width - 20, 75);
+    }
+    
+    // Title
+    ctx.font = 'bold 32px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#10b981';
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 3;
+    ctx.strokeText('🐼 PANDA STACK 🐼', canvas.width / 2, 45);
+    ctx.fillText('🐼 PANDA STACK 🐼', canvas.width / 2, 45);
+    
+    // Instructions
+    ctx.font = '18px sans-serif';
+    ctx.fillStyle = '#fff';
+    ctx.fillText('Press SPACE to drop!', canvas.width / 2, canvas.height - 10);
+    
+    // Game over message
+    if (data.gameOver) {
+        ctx.fillStyle = 'rgba(0,0,0,0.5)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.font = 'bold 48px sans-serif';
+        ctx.fillStyle = '#ff6b6b';
+        ctx.fillText('CRASH! 💥', canvas.width / 2, canvas.height / 2);
+    }
+    
+    requestAnimationFrame(pandaStackLoop);
+}
+
+function calculateOverlap(current, target) {
+    const currentLeft = current.x - current.width / 2;
+    const currentRight = current.x + current.width / 2;
+    const targetLeft = target.x - target.width / 2;
+    const targetRight = target.x + target.width / 2;
+    
+    const overlapLeft = Math.max(currentLeft, targetLeft);
+    const overlapRight = Math.min(currentRight, targetRight);
+    
+    return Math.max(0, overlapRight - overlapLeft);
+}
+
+function drawStackedPanda(x, y, width, index, time) {
+    const scale = width / 60; // Scale based on width
+    
+    ctx.save();
+    ctx.translate(x, y);
+    
+    // Body
+    ctx.fillStyle = 'white';
+    ctx.beginPath();
+    ctx.ellipse(0, 10 * scale, 25 * scale, 20 * scale, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    
+    // Head
+    ctx.beginPath();
+    ctx.arc(0, -12 * scale, 18 * scale, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    
+    // Ears
+    ctx.fillStyle = 'black';
+    ctx.beginPath();
+    ctx.arc(-13 * scale, -26 * scale, 7 * scale, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(13 * scale, -26 * scale, 7 * scale, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Eye patches
+    ctx.beginPath();
+    ctx.ellipse(-7 * scale, -14 * scale, 6 * scale, 8 * scale, -0.2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(7 * scale, -14 * scale, 6 * scale, 8 * scale, 0.2, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Eyes (blinking occasionally)
+    const blink = Math.sin(time * 2 + index) > 0.95;
+    ctx.fillStyle = 'white';
+    if (!blink) {
+        ctx.beginPath();
+        ctx.arc(-7 * scale, -14 * scale, 3 * scale, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(7 * scale, -14 * scale, 3 * scale, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Pupils
+        ctx.fillStyle = 'black';
+        ctx.beginPath();
+        ctx.arc(-7 * scale, -13 * scale, 1.5 * scale, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(7 * scale, -13 * scale, 1.5 * scale, 0, Math.PI * 2);
+        ctx.fill();
+    } else {
+        // Closed eyes
+        ctx.strokeStyle = 'white';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(-10 * scale, -14 * scale);
+        ctx.lineTo(-4 * scale, -14 * scale);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(4 * scale, -14 * scale);
+        ctx.lineTo(10 * scale, -14 * scale);
+        ctx.stroke();
+    }
+    
+    // Nose
+    ctx.fillStyle = 'black';
+    ctx.beginPath();
+    ctx.ellipse(0, -5 * scale, 4 * scale, 3 * scale, 0, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Smile
+    ctx.strokeStyle = 'black';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(0, -3 * scale, 5 * scale, 0.2 * Math.PI, 0.8 * Math.PI);
+    ctx.stroke();
+    
+    // Arms (hugging pose)
+    ctx.fillStyle = 'black';
+    ctx.beginPath();
+    ctx.ellipse(-22 * scale, 8 * scale, 8 * scale, 12 * scale, 0.3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(22 * scale, 8 * scale, 8 * scale, 12 * scale, -0.3, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Feet
+    ctx.beginPath();
+    ctx.ellipse(-10 * scale, 25 * scale, 8 * scale, 6 * scale, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(10 * scale, 25 * scale, 8 * scale, 6 * scale, 0, 0, Math.PI * 2);
+    ctx.fill();
+    
+    ctx.restore();
+}
+
+function handleStackKeys(key) {
+    if (key === 'Escape') {
+        endPandaStack();
+        return;
+    }
+    
+    const data = miniGameData;
+    
+    if ((key === ' ' || key === 'Enter') && !data.isDropping && !data.gameOver && data.currentPanda) {
+        data.isDropping = true;
+    }
+}
+
+function endPandaStack() {
+    const data = miniGameData;
+    if (miniGameScore > data.highScore) {
+        localStorage.setItem('pandaStackHigh', miniGameScore.toString());
+        data.highScore = miniGameScore;
+    }
+    
+    currentMode = MODE_PARTY_HUB;
+    
+    overlay.innerHTML = `
+        <h2 style="color: #10b981;">🐼 Panda Stack Complete!</h2>
+        <p style="font-size: 2rem;">Score: ${miniGameScore}</p>
+        <p>🐼 Pandas Stacked: ${data.stackedPandas.length}</p>
+        <p>🏆 Best: ${data.highScore}</p>
+        <div class="overlay-buttons">
+            <button class="game-btn secondary" id="backBtn">BACK (ESC)</button>
+            <button class="game-btn" id="retryMiniBtn">PLAY AGAIN (ENTER)</button>
+        </div>
+    `;
+    overlay.classList.add('visible');
+    overlay.style.background = '';
+    overlay.style.boxShadow = '';
+    
+    document.getElementById('backBtn').onclick = startPartyHub;
+    document.getElementById('retryMiniBtn').onclick = startPandaStack;
 }
 
 function gameOver() {
