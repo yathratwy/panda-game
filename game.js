@@ -26,6 +26,11 @@ const MODE_MINIGAME_WHACK = 'minigame_whack';
 const MODE_MINIGAME_STACK = 'minigame_stack';
 const MODE_MINIGAME_CAKE = 'minigame_cake';
 const MODE_MINIGAME_DANCEFLOOR = 'minigame_dancefloor';
+// Bundle 2 games
+const MODE_MINIGAME_SNAKE = 'minigame_snake';
+const MODE_MINIGAME_BRICK = 'minigame_brick';
+const MODE_MINIGAME_SPACE = 'minigame_space';
+const MODE_MINIGAME_PUZZLE = 'minigame_puzzle';
 let currentMode = MODE_MAP;
 
 // Party/Confetti system
@@ -39,6 +44,31 @@ let miniGameScore = 0;
 let miniGameTimer = 0;
 let miniGameData = {};
 let selectedMiniGame = 0;
+let miniGameLevel = 1; // Current difficulty level (1-3)
+let currentBundle = 1; // Which bundle of games (1 or 2)
+
+// Mini-game completion tracking
+let miniGameProgress = {
+    // Bundle 1
+    catch: { completed: false, bestLevel: 0 },
+    dance: { completed: false, bestLevel: 0 },
+    memory: { completed: false, bestLevel: 0 },
+    runner: { completed: false, bestLevel: 0 },
+    balloon: { completed: false, bestLevel: 0 },
+    pong: { completed: false, bestLevel: 0 },
+    whack: { completed: false, bestLevel: 0 },
+    stack: { completed: false, bestLevel: 0 },
+    cake: { completed: false, bestLevel: 0 },
+    dancefloor: { completed: false, bestLevel: 0 },
+    // Bundle 2
+    snake: { completed: false, bestLevel: 0 },
+    brick: { completed: false, bestLevel: 0 },
+    space: { completed: false, bestLevel: 0 },
+    puzzle: { completed: false, bestLevel: 0 }
+};
+
+// Bundle 2 games (unlocked after completing bundle 1)
+let bundle2Unlocked = false;
 
 // Game state
 let gameRunning = false;
@@ -313,6 +343,27 @@ function handleKeyDown(e) {
         return;
     }
     
+    // Bundle 2 games
+    if (currentMode === MODE_MINIGAME_SNAKE) {
+        handleSnakeKeys(key);
+        return;
+    }
+    
+    if (currentMode === MODE_MINIGAME_BRICK) {
+        handleBrickKeys(key);
+        return;
+    }
+    
+    if (currentMode === MODE_MINIGAME_SPACE) {
+        handleSpaceKeys(key);
+        return;
+    }
+    
+    if (currentMode === MODE_MINIGAME_PUZZLE) {
+        handlePuzzleKeys(key);
+        return;
+    }
+    
     if (overlay.classList.contains('visible')) {
         handleOverlayKeys(key);
     } else if (currentMode === MODE_MAP) {
@@ -408,22 +459,45 @@ function handlePartyHubKeys(key) {
         return;
     }
     
-    // Navigation for 5x2 grid layout
-    const cols = 5;
-    if (key === 'ArrowLeft' || key === 'a' || key === 'A') {
-        selectedMiniGame = (selectedMiniGame - 1 + miniGames.length) % miniGames.length;
+    // Tab to switch bundles
+    if (key === 'Tab' && bundle2Unlocked) {
+        currentBundle = currentBundle === 1 ? 2 : 1;
+        miniGames = currentBundle === 1 ? miniGamesBundle1 : miniGamesBundle2;
+        selectedMiniGame = 0;
+        miniGameLevel = 1;
     }
-    if (key === 'ArrowRight' || key === 'd' || key === 'D') {
-        selectedMiniGame = (selectedMiniGame + 1) % miniGames.length;
-    }
-    if (key === 'ArrowUp' || key === 'w' || key === 'W') {
-        if (selectedMiniGame >= cols) {
-            selectedMiniGame -= cols;
+    
+    // Q/E to change level
+    const selectedGame = miniGames[selectedMiniGame];
+    if (selectedGame && selectedGame.levels > 1) {
+        if (key === 'q' || key === 'Q') {
+            miniGameLevel = Math.max(1, miniGameLevel - 1);
+        }
+        if (key === 'e' || key === 'E') {
+            miniGameLevel = Math.min(selectedGame.levels, miniGameLevel + 1);
         }
     }
-    if (key === 'ArrowDown' || key === 's' || key === 'S') {
+    
+    // Navigation for grid layout
+    const cols = currentBundle === 1 ? 5 : 4;
+    if (key === 'ArrowLeft') {
+        selectedMiniGame = (selectedMiniGame - 1 + miniGames.length) % miniGames.length;
+        miniGameLevel = 1;
+    }
+    if (key === 'ArrowRight') {
+        selectedMiniGame = (selectedMiniGame + 1) % miniGames.length;
+        miniGameLevel = 1;
+    }
+    if (key === 'ArrowUp') {
+        if (selectedMiniGame >= cols) {
+            selectedMiniGame -= cols;
+            miniGameLevel = 1;
+        }
+    }
+    if (key === 'ArrowDown') {
         if (selectedMiniGame < miniGames.length - cols) {
             selectedMiniGame += cols;
+            miniGameLevel = 1;
         }
     }
     if (key === 'Enter' || key === ' ') {
@@ -475,17 +549,28 @@ function handlePartyHubKeys(key) {
 }
 
 function launchSelectedMiniGame() {
-    switch (selectedMiniGame) {
-        case 0: startBambooCatch(); break;
-        case 1: startPandaDance(); break;
-        case 2: startMemoryMatch(); break;
-        case 3: startPandaRunner(); break;
-        case 4: startBalloonPop(); break;
-        case 5: startPandaPong(); break;
-        case 6: startWhackAJaguar(); break;
-        case 7: startPandaStack(); break;
-        case 8: startCakeMaker(); break;
-        case 9: startDanceFloor(); break;
+    if (currentBundle === 1) {
+        // Bundle 1 games
+        switch (selectedMiniGame) {
+            case 0: startBambooCatch(); break;
+            case 1: startPandaDance(); break;
+            case 2: startMemoryMatch(); break;
+            case 3: startPandaRunner(); break;
+            case 4: startBalloonPop(); break;
+            case 5: startPandaPong(); break;
+            case 6: startWhackAJaguar(); break;
+            case 7: startPandaStack(); break;
+            case 8: startCakeMaker(); break;
+            case 9: startDanceFloor(); break;
+        }
+    } else {
+        // Bundle 2 games
+        switch (selectedMiniGame) {
+            case 0: startPandaSnake(); break;
+            case 1: startBrickBreaker(); break;
+            case 2: startSpacePanda(); break;
+            case 3: startSlidePuzzle(); break;
+        }
     }
 }
 
@@ -1735,18 +1820,30 @@ function partyLoop(timestamp) {
 }
 
 // ==================== PARTY HUB - MINI GAME SELECTION ====================
-const miniGames = [
-    { id: 'catch', name: 'Bamboo Catch', icon: '🎋', desc: 'Catch falling bamboo!', color: '#4ade80' },
-    { id: 'dance', name: 'Panda Dance', icon: '💃', desc: 'Match the arrows!', color: '#f472b6' },
-    { id: 'memory', name: 'Memory Match', icon: '🧠', desc: 'Find the pairs!', color: '#60a5fa' },
-    { id: 'runner', name: 'Panda Run', icon: '🏃', desc: 'Jump over obstacles!', color: '#fbbf24' },
-    { id: 'balloon', name: 'Balloon Pop', icon: '🎈', desc: 'Pop the balloons!', color: '#ef4444' },
-    { id: 'pong', name: 'Panda Pong', icon: '🏓', desc: 'Beat the computer!', color: '#8b5cf6' },
-    { id: 'whack', name: 'Whack-a-Jaguar', icon: '🔨', desc: 'Bonk the jaguars!', color: '#f97316' },
-    { id: 'stack', name: 'Panda Stack', icon: '🐼', desc: 'Stack the pandas!', color: '#10b981' },
-    { id: 'cake', name: 'Cake Maker', icon: '🎂', desc: 'Decorate a cake!', color: '#ec4899' },
-    { id: 'dancefloor', name: 'Dance Floor', icon: '🕺', desc: 'Control the party!', color: '#06b6d4' }
+// Bundle 1 - Original party games
+const miniGamesBundle1 = [
+    { id: 'catch', name: 'Bamboo Catch', icon: '🎋', desc: 'Catch falling bamboo!', color: '#4ade80', levels: 3 },
+    { id: 'dance', name: 'Panda Dance', icon: '💃', desc: 'Match the arrows!', color: '#f472b6', levels: 3 },
+    { id: 'memory', name: 'Memory Match', icon: '🧠', desc: 'Find the pairs!', color: '#60a5fa', levels: 3 },
+    { id: 'runner', name: 'Panda Run', icon: '🏃', desc: 'Jump over obstacles!', color: '#fbbf24', levels: 3 },
+    { id: 'balloon', name: 'Balloon Pop', icon: '🎈', desc: 'Pop the balloons!', color: '#ef4444', levels: 3 },
+    { id: 'pong', name: 'Panda Pong', icon: '🏓', desc: 'Beat the computer!', color: '#8b5cf6', levels: 3 },
+    { id: 'whack', name: 'Whack-a-Jaguar', icon: '🔨', desc: 'Bonk the jaguars!', color: '#f97316', levels: 3 },
+    { id: 'stack', name: 'Panda Stack', icon: '🐼', desc: 'Stack the pandas!', color: '#10b981', levels: 3 },
+    { id: 'cake', name: 'Cake Maker', icon: '🎂', desc: 'Decorate a cake!', color: '#ec4899', levels: 1 },
+    { id: 'dancefloor', name: 'Dance Floor', icon: '🕺', desc: 'Control the party!', color: '#06b6d4', levels: 3 }
 ];
+
+// Bundle 2 - Unlocked after completing Bundle 1
+const miniGamesBundle2 = [
+    { id: 'snake', name: 'Panda Snake', icon: '🐍', desc: 'Eat bamboo & grow!', color: '#22c55e', levels: 3 },
+    { id: 'brick', name: 'Brick Breaker', icon: '🧱', desc: 'Break all bricks!', color: '#f59e0b', levels: 3 },
+    { id: 'space', name: 'Space Panda', icon: '🚀', desc: 'Shoot the asteroids!', color: '#3b82f6', levels: 3 },
+    { id: 'puzzle', name: 'Slide Puzzle', icon: '🧩', desc: 'Solve the puzzle!', color: '#a855f7', levels: 3 }
+];
+
+// Current active games based on bundle
+let miniGames = miniGamesBundle1;
 
 function startPartyHub() {
     currentMode = MODE_PARTY_HUB;
@@ -1754,9 +1851,60 @@ function startPartyHub() {
     createConfetti();
     partyStartTime = performance.now() / 1000;
     selectedMiniGame = 0;
+    miniGameLevel = 1;
+    
+    // Check if bundle 2 should be unlocked
+    checkBundle2Unlock();
+    
+    // Load saved progress
+    loadMiniGameProgress();
+    
+    // Set current games based on bundle
+    miniGames = currentBundle === 1 ? miniGamesBundle1 : miniGamesBundle2;
     
     overlay.classList.remove('visible');
     requestAnimationFrame(partyHubLoop);
+}
+
+function checkBundle2Unlock() {
+    const allCompleted = Object.values(miniGameProgress).every(p => p.completed);
+    if (allCompleted && !bundle2Unlocked) {
+        bundle2Unlocked = true;
+        localStorage.setItem('bundle2Unlocked', 'true');
+    }
+    // Load saved bundle unlock state
+    if (localStorage.getItem('bundle2Unlocked') === 'true') {
+        bundle2Unlocked = true;
+    }
+}
+
+function loadMiniGameProgress() {
+    const saved = localStorage.getItem('miniGameProgress');
+    if (saved) {
+        try {
+            const parsed = JSON.parse(saved);
+            Object.keys(parsed).forEach(key => {
+                if (miniGameProgress[key]) {
+                    miniGameProgress[key] = parsed[key];
+                }
+            });
+        } catch(e) {}
+    }
+}
+
+function saveMiniGameProgress() {
+    localStorage.setItem('miniGameProgress', JSON.stringify(miniGameProgress));
+}
+
+function markGameCompleted(gameId, level) {
+    if (miniGameProgress[gameId]) {
+        miniGameProgress[gameId].completed = true;
+        if (level > miniGameProgress[gameId].bestLevel) {
+            miniGameProgress[gameId].bestLevel = level;
+        }
+        saveMiniGameProgress();
+        checkBundle2Unlock();
+    }
 }
 
 function partyHubLoop(timestamp) {
@@ -1769,38 +1917,77 @@ function partyHubLoop(timestamp) {
     updateConfetti();
     confetti.forEach(piece => drawConfettiPiece(piece));
     
+    // Bundle indicator at top
+    const bundleName = currentBundle === 1 ? '🎮 BUNDLE 1' : '🌟 BUNDLE 2';
+    ctx.fillStyle = 'rgba(0,0,0,0.5)';
+    ctx.fillRect(0, 0, canvas.width, 35);
+    
+    ctx.font = 'bold 18px sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#fff';
+    ctx.fillText(bundleName, 20, 25);
+    
+    // Completion count
+    const completed = Object.values(miniGameProgress).filter(p => p.completed).length;
+    ctx.textAlign = 'right';
+    ctx.fillStyle = '#4ade80';
+    ctx.fillText(`✓ ${completed}/10 Complete`, canvas.width - 20, 25);
+    
+    // Bundle switch button (if bundle 2 unlocked)
+    if (bundle2Unlocked) {
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#ffd700';
+        ctx.fillText('Press TAB to switch bundles', canvas.width / 2, 25);
+    } else {
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#888';
+        ctx.fillText(`Complete all 10 to unlock Bundle 2!`, canvas.width / 2, 25);
+    }
+    
     // Title
     ctx.save();
     ctx.shadowColor = '#ffd700';
     ctx.shadowBlur = 20;
-    ctx.font = 'bold 42px "Fredoka One", cursive, sans-serif';
+    ctx.font = 'bold 36px "Fredoka One", cursive, sans-serif';
     ctx.textAlign = 'center';
     ctx.fillStyle = '#fff';
-    ctx.fillText('🎉 PANDA PARTY! 🎉', canvas.width / 2, 70);
+    ctx.fillText('🎉 PANDA PARTY! 🎉', canvas.width / 2, 65);
     ctx.restore();
     
-    ctx.font = 'bold 20px sans-serif';
-    ctx.fillStyle = '#ffd700';
-    ctx.fillText('Choose a mini-game to play!', canvas.width / 2, 110);
+    // Level selector for selected game
+    const selectedGame = miniGames[selectedMiniGame];
+    if (selectedGame && selectedGame.levels > 1) {
+        ctx.font = 'bold 16px sans-serif';
+        ctx.fillStyle = '#ffd700';
+        ctx.fillText(`Level ${miniGameLevel}/${selectedGame.levels} (Q/E to change)`, canvas.width / 2, 90);
+    } else {
+        ctx.font = 'bold 16px sans-serif';
+        ctx.fillStyle = '#aaa';
+        ctx.fillText('Select a game!', canvas.width / 2, 90);
+    }
     
-    // Draw mini-game cards in 2 rows of 5
-    const cardWidth = 120;
-    const cardHeight = 130;
+    // Draw mini-game cards
+    const cardWidth = currentBundle === 1 ? 120 : 140;
+    const cardHeight = currentBundle === 1 ? 125 : 140;
     const gap = 12;
-    const startY = 120;
-    const rowGap = 12;
+    const startY = 105;
+    const rowGap = 10;
+    const cols = currentBundle === 1 ? 5 : 4;
     
     miniGames.forEach((game, index) => {
-        // 5x2 grid layout for 10 games
-        const cols = 5;
         const row = Math.floor(index / cols);
         const col = index % cols;
-        const totalRowWidth = cols * cardWidth + (cols - 1) * gap;
+        const totalRowWidth = Math.min(cols, miniGames.length - row * cols) * cardWidth + (Math.min(cols, miniGames.length - row * cols) - 1) * gap;
         const rowStartX = (canvas.width - totalRowWidth) / 2;
         const cardX = rowStartX + col * (cardWidth + gap);
         const cardY = startY + row * (cardHeight + rowGap);
         const isSelected = index === selectedMiniGame;
         const hoverBounce = isSelected ? Math.sin(time * 6) * 5 : 0;
+        
+        // Check completion status
+        const progress = miniGameProgress[game.id];
+        const isCompleted = progress ? progress.completed : false;
+        const bestLevel = progress ? progress.bestLevel : 0;
         
         // Card shadow
         ctx.fillStyle = 'rgba(0,0,0,0.3)';
@@ -1813,41 +2000,59 @@ function partyHubLoop(timestamp) {
         ctx.fillStyle = cardGradient;
         ctx.fillRect(cardX, cardY - hoverBounce, cardWidth, cardHeight);
         
+        // Completion checkmark
+        if (isCompleted) {
+            ctx.fillStyle = 'rgba(74, 222, 128, 0.3)';
+            ctx.fillRect(cardX, cardY - hoverBounce, cardWidth, cardHeight);
+        }
+        
         // Card border
-        ctx.strokeStyle = isSelected ? '#fff' : '#666';
+        ctx.strokeStyle = isSelected ? '#fff' : (isCompleted ? '#4ade80' : '#666');
         ctx.lineWidth = isSelected ? 4 : 2;
         ctx.strokeRect(cardX, cardY - hoverBounce, cardWidth, cardHeight);
         
+        // Completion badge
+        if (isCompleted) {
+            ctx.font = '16px sans-serif';
+            ctx.fillText('✓', cardX + cardWidth - 15, cardY + 18 - hoverBounce);
+        }
+        
         // Icon
-        ctx.font = '45px sans-serif';
+        ctx.font = '40px sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText(game.icon, cardX + cardWidth / 2, cardY + 55 - hoverBounce);
+        ctx.fillText(game.icon, cardX + cardWidth / 2, cardY + 48 - hoverBounce);
         
         // Name
-        ctx.font = 'bold 15px sans-serif';
+        ctx.font = 'bold 13px sans-serif';
         ctx.fillStyle = '#fff';
-        ctx.fillText(game.name, cardX + cardWidth / 2, cardY + 85 - hoverBounce);
+        ctx.fillText(game.name, cardX + cardWidth / 2, cardY + 72 - hoverBounce);
         
-        // Description
-        ctx.font = '12px sans-serif';
-        ctx.fillStyle = '#ddd';
-        ctx.fillText(game.desc, cardX + cardWidth / 2, cardY + 105 - hoverBounce);
+        // Best level stars
+        if (game.levels > 1) {
+            let stars = '';
+            for (let i = 1; i <= game.levels; i++) {
+                stars += i <= bestLevel ? '⭐' : '☆';
+            }
+            ctx.font = '12px sans-serif';
+            ctx.fillText(stars, cardX + cardWidth / 2, cardY + 90 - hoverBounce);
+        }
         
-        // Number key hint
-        ctx.font = 'bold 14px sans-serif';
+        // Key hint
+        ctx.font = 'bold 12px sans-serif';
         ctx.fillStyle = isSelected ? '#ffd700' : '#888';
-        ctx.fillText(`[${index + 1}]`, cardX + cardWidth / 2, cardY + cardHeight - 12 - hoverBounce);
+        const keyHint = index < 9 ? `[${index + 1}]` : '[0]';
+        ctx.fillText(keyHint, cardX + cardWidth / 2, cardY + cardHeight - 10 - hoverBounce);
     });
     
     // Instructions
-    ctx.font = 'bold 16px sans-serif';
+    ctx.font = 'bold 14px sans-serif';
     ctx.fillStyle = '#fff';
     ctx.textAlign = 'center';
-    ctx.fillText('← → ↑ ↓ to select | ENTER to play | ESC for map', canvas.width / 2, canvas.height - 50);
+    ctx.fillText('← → ↑ ↓ select | Q/E level | ENTER play | ESC map', canvas.width / 2, canvas.height - 45);
     
     // Draw small dancing panda
-    drawSmallDancingPanda(60, canvas.height - 70, time);
-    drawSmallDancingPanda(canvas.width - 60, canvas.height - 70, time);
+    drawSmallDancingPanda(50, canvas.height - 60, time);
+    drawSmallDancingPanda(canvas.width - 50, canvas.height - 60, time);
     
     requestAnimationFrame(partyHubLoop);
 }
@@ -4652,6 +4857,790 @@ function endDanceFloor() {
     
     document.getElementById('backBtn').onclick = startPartyHub;
     document.getElementById('retryMiniBtn').onclick = startDanceFloor;
+}
+
+// ==================== BUNDLE 2: PANDA SNAKE ====================
+function startPandaSnake() {
+    currentMode = MODE_MINIGAME_SNAKE;
+    miniGameScore = 0;
+    partyStartTime = performance.now() / 1000;
+    
+    const gridSize = 20;
+    const cols = Math.floor(canvas.width / gridSize);
+    const rows = Math.floor((canvas.height - 80) / gridSize);
+    
+    miniGameData = {
+        snake: [{ x: Math.floor(cols / 2), y: Math.floor(rows / 2) }],
+        direction: { x: 1, y: 0 },
+        nextDirection: { x: 1, y: 0 },
+        food: { x: 0, y: 0 },
+        gridSize: gridSize,
+        cols: cols,
+        rows: rows,
+        lastMove: 0,
+        speed: 150 - (miniGameLevel - 1) * 30, // Faster at higher levels
+        gameOver: false,
+        highScore: parseInt(localStorage.getItem('snakeHigh') || '0')
+    };
+    
+    spawnSnakeFood();
+    overlay.classList.remove('visible');
+    requestAnimationFrame(snakeLoop);
+}
+
+function spawnSnakeFood() {
+    const data = miniGameData;
+    let validPosition = false;
+    while (!validPosition) {
+        data.food.x = Math.floor(Math.random() * data.cols);
+        data.food.y = Math.floor(Math.random() * data.rows);
+        validPosition = !data.snake.some(seg => seg.x === data.food.x && seg.y === data.food.y);
+    }
+}
+
+function snakeLoop(timestamp) {
+    if (currentMode !== MODE_MINIGAME_SNAKE) return;
+    
+    const time = timestamp;
+    const data = miniGameData;
+    
+    if (!data.gameOver && time - data.lastMove > data.speed) {
+        data.lastMove = time;
+        data.direction = { ...data.nextDirection };
+        
+        const head = { x: data.snake[0].x + data.direction.x, y: data.snake[0].y + data.direction.y };
+        
+        // Check wall collision
+        if (head.x < 0 || head.x >= data.cols || head.y < 0 || head.y >= data.rows) {
+            data.gameOver = true;
+        }
+        
+        // Check self collision
+        if (data.snake.some(seg => seg.x === head.x && seg.y === head.y)) {
+            data.gameOver = true;
+        }
+        
+        if (!data.gameOver) {
+            data.snake.unshift(head);
+            
+            // Check food
+            if (head.x === data.food.x && head.y === data.food.y) {
+                miniGameScore += 10;
+                spawnSnakeFood();
+            } else {
+                data.snake.pop();
+            }
+        }
+    }
+    
+    // Draw
+    ctx.fillStyle = '#1a1a2e';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Grid
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 1;
+    for (let i = 0; i <= data.cols; i++) {
+        ctx.beginPath();
+        ctx.moveTo(i * data.gridSize, 60);
+        ctx.lineTo(i * data.gridSize, canvas.height);
+        ctx.stroke();
+    }
+    for (let j = 0; j <= data.rows; j++) {
+        ctx.beginPath();
+        ctx.moveTo(0, 60 + j * data.gridSize);
+        ctx.lineTo(canvas.width, 60 + j * data.gridSize);
+        ctx.stroke();
+    }
+    
+    // Food (bamboo)
+    ctx.font = `${data.gridSize - 4}px sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.fillText('🎋', data.food.x * data.gridSize + data.gridSize/2, 60 + data.food.y * data.gridSize + data.gridSize - 2);
+    
+    // Snake
+    data.snake.forEach((seg, i) => {
+        if (i === 0) {
+            // Head
+            ctx.fillStyle = '#fff';
+            ctx.beginPath();
+            ctx.arc(seg.x * data.gridSize + data.gridSize/2, 60 + seg.y * data.gridSize + data.gridSize/2, data.gridSize/2 - 2, 0, Math.PI * 2);
+            ctx.fill();
+            // Eyes
+            ctx.fillStyle = '#000';
+            ctx.beginPath();
+            ctx.arc(seg.x * data.gridSize + data.gridSize/2 - 4, 60 + seg.y * data.gridSize + data.gridSize/2 - 2, 3, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(seg.x * data.gridSize + data.gridSize/2 + 4, 60 + seg.y * data.gridSize + data.gridSize/2 - 2, 3, 0, Math.PI * 2);
+            ctx.fill();
+        } else {
+            ctx.fillStyle = i % 2 === 0 ? '#fff' : '#333';
+            ctx.fillRect(seg.x * data.gridSize + 2, 60 + seg.y * data.gridSize + 2, data.gridSize - 4, data.gridSize - 4);
+        }
+    });
+    
+    // UI
+    ctx.fillStyle = '#22c55e';
+    ctx.fillRect(0, 0, canvas.width, 55);
+    ctx.font = 'bold 24px sans-serif';
+    ctx.fillStyle = '#fff';
+    ctx.textAlign = 'left';
+    ctx.fillText(`🐍 Score: ${miniGameScore}`, 20, 35);
+    ctx.textAlign = 'center';
+    ctx.fillText('🐼 PANDA SNAKE', canvas.width / 2, 35);
+    ctx.textAlign = 'right';
+    ctx.fillText(`🏆 ${data.highScore}`, canvas.width - 20, 35);
+    
+    if (data.gameOver) {
+        ctx.fillStyle = 'rgba(0,0,0,0.7)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.font = 'bold 40px sans-serif';
+        ctx.fillStyle = '#ef4444';
+        ctx.textAlign = 'center';
+        ctx.fillText('GAME OVER!', canvas.width / 2, canvas.height / 2);
+        ctx.font = '20px sans-serif';
+        ctx.fillStyle = '#fff';
+        ctx.fillText('Press ENTER to continue', canvas.width / 2, canvas.height / 2 + 40);
+    }
+    
+    requestAnimationFrame(snakeLoop);
+}
+
+function handleSnakeKeys(key) {
+    const data = miniGameData;
+    
+    if (data.gameOver) {
+        if (key === 'Enter') {
+            endPandaSnake();
+        }
+        return;
+    }
+    
+    if (key === 'Escape') {
+        endPandaSnake();
+        return;
+    }
+    
+    if ((key === 'ArrowUp' || key === 'w') && data.direction.y !== 1) {
+        data.nextDirection = { x: 0, y: -1 };
+    }
+    if ((key === 'ArrowDown' || key === 's') && data.direction.y !== -1) {
+        data.nextDirection = { x: 0, y: 1 };
+    }
+    if ((key === 'ArrowLeft' || key === 'a') && data.direction.x !== 1) {
+        data.nextDirection = { x: -1, y: 0 };
+    }
+    if ((key === 'ArrowRight' || key === 'd') && data.direction.x !== -1) {
+        data.nextDirection = { x: 1, y: 0 };
+    }
+}
+
+function endPandaSnake() {
+    const data = miniGameData;
+    if (miniGameScore > data.highScore) {
+        localStorage.setItem('snakeHigh', miniGameScore.toString());
+    }
+    
+    // Mark as completed if score > 50
+    if (miniGameScore >= 50) {
+        markGameCompleted('snake', miniGameLevel);
+    }
+    
+    currentMode = MODE_PARTY_HUB;
+    startPartyHub();
+}
+
+// ==================== BUNDLE 2: BRICK BREAKER ====================
+function startBrickBreaker() {
+    currentMode = MODE_MINIGAME_BRICK;
+    miniGameScore = 0;
+    partyStartTime = performance.now() / 1000;
+    
+    const bricks = [];
+    const rows = 4 + miniGameLevel;
+    const cols = 10;
+    const brickWidth = 70;
+    const brickHeight = 20;
+    const colors = ['#ef4444', '#f97316', '#fbbf24', '#22c55e', '#3b82f6', '#8b5cf6'];
+    
+    for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+            bricks.push({
+                x: 50 + c * (brickWidth + 5),
+                y: 80 + r * (brickHeight + 5),
+                width: brickWidth,
+                height: brickHeight,
+                color: colors[r % colors.length],
+                alive: true
+            });
+        }
+    }
+    
+    miniGameData = {
+        paddle: { x: canvas.width / 2 - 50, y: canvas.height - 40, width: 100, height: 15 },
+        ball: { x: canvas.width / 2, y: canvas.height - 60, vx: 4, vy: -4, radius: 8 },
+        bricks: bricks,
+        lives: 3,
+        started: false,
+        highScore: parseInt(localStorage.getItem('brickHigh') || '0')
+    };
+    
+    overlay.classList.remove('visible');
+    requestAnimationFrame(brickLoop);
+}
+
+function brickLoop(timestamp) {
+    if (currentMode !== MODE_MINIGAME_BRICK) return;
+    
+    const data = miniGameData;
+    
+    // Paddle movement
+    if (keysPressed.left) data.paddle.x -= 8;
+    if (keysPressed.right) data.paddle.x += 8;
+    data.paddle.x = Math.max(0, Math.min(canvas.width - data.paddle.width, data.paddle.x));
+    
+    if (data.started) {
+        // Ball movement
+        data.ball.x += data.ball.vx;
+        data.ball.y += data.ball.vy;
+        
+        // Wall collision
+        if (data.ball.x <= data.ball.radius || data.ball.x >= canvas.width - data.ball.radius) {
+            data.ball.vx *= -1;
+        }
+        if (data.ball.y <= data.ball.radius) {
+            data.ball.vy *= -1;
+        }
+        
+        // Paddle collision
+        if (data.ball.y + data.ball.radius >= data.paddle.y &&
+            data.ball.x >= data.paddle.x &&
+            data.ball.x <= data.paddle.x + data.paddle.width) {
+            data.ball.vy = -Math.abs(data.ball.vy);
+            const hitPos = (data.ball.x - data.paddle.x) / data.paddle.width;
+            data.ball.vx = (hitPos - 0.5) * 10;
+        }
+        
+        // Brick collision
+        data.bricks.forEach(brick => {
+            if (brick.alive &&
+                data.ball.x >= brick.x &&
+                data.ball.x <= brick.x + brick.width &&
+                data.ball.y >= brick.y &&
+                data.ball.y <= brick.y + brick.height) {
+                brick.alive = false;
+                data.ball.vy *= -1;
+                miniGameScore += 10;
+            }
+        });
+        
+        // Ball lost
+        if (data.ball.y > canvas.height) {
+            data.lives--;
+            if (data.lives <= 0) {
+                endBrickBreaker();
+                return;
+            }
+            data.ball.x = data.paddle.x + data.paddle.width / 2;
+            data.ball.y = data.paddle.y - 20;
+            data.ball.vx = 4;
+            data.ball.vy = -4;
+            data.started = false;
+        }
+        
+        // Win check
+        if (data.bricks.every(b => !b.alive)) {
+            endBrickBreaker(true);
+            return;
+        }
+    } else {
+        data.ball.x = data.paddle.x + data.paddle.width / 2;
+        data.ball.y = data.paddle.y - 20;
+    }
+    
+    // Draw
+    ctx.fillStyle = '#1a1a2e';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Bricks
+    data.bricks.forEach(brick => {
+        if (brick.alive) {
+            ctx.fillStyle = brick.color;
+            ctx.fillRect(brick.x, brick.y, brick.width, brick.height);
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(brick.x, brick.y, brick.width, brick.height);
+        }
+    });
+    
+    // Paddle (panda themed)
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(data.paddle.x, data.paddle.y, data.paddle.width, data.paddle.height);
+    ctx.fillStyle = '#000';
+    ctx.fillRect(data.paddle.x, data.paddle.y, 15, data.paddle.height);
+    ctx.fillRect(data.paddle.x + data.paddle.width - 15, data.paddle.y, 15, data.paddle.height);
+    
+    // Ball (panda face)
+    ctx.fillStyle = '#fff';
+    ctx.beginPath();
+    ctx.arc(data.ball.x, data.ball.y, data.ball.radius, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#000';
+    ctx.beginPath();
+    ctx.arc(data.ball.x - 3, data.ball.y - 2, 2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(data.ball.x + 3, data.ball.y - 2, 2, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // UI
+    ctx.font = 'bold 20px sans-serif';
+    ctx.fillStyle = '#fff';
+    ctx.textAlign = 'left';
+    ctx.fillText(`Score: ${miniGameScore}`, 20, 30);
+    ctx.fillText(`Lives: ${'❤️'.repeat(data.lives)}`, 20, 55);
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#f59e0b';
+    ctx.fillText('🧱 BRICK BREAKER', canvas.width / 2, 30);
+    ctx.textAlign = 'right';
+    ctx.fillStyle = '#fff';
+    ctx.fillText(`🏆 ${data.highScore}`, canvas.width - 20, 30);
+    
+    if (!data.started) {
+        ctx.font = '18px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('Press SPACE to launch!', canvas.width / 2, canvas.height - 80);
+    }
+    
+    requestAnimationFrame(brickLoop);
+}
+
+function handleBrickKeys(key) {
+    if (key === 'Escape') {
+        endBrickBreaker();
+        return;
+    }
+    if (key === ' ' && !miniGameData.started) {
+        miniGameData.started = true;
+    }
+}
+
+function endBrickBreaker(won = false) {
+    const data = miniGameData;
+    if (miniGameScore > data.highScore) {
+        localStorage.setItem('brickHigh', miniGameScore.toString());
+    }
+    if (won) {
+        markGameCompleted('brick', miniGameLevel);
+    }
+    currentMode = MODE_PARTY_HUB;
+    startPartyHub();
+}
+
+// ==================== BUNDLE 2: SPACE PANDA ====================
+function startSpacePanda() {
+    currentMode = MODE_MINIGAME_SPACE;
+    miniGameScore = 0;
+    partyStartTime = performance.now() / 1000;
+    
+    miniGameData = {
+        ship: { x: canvas.width / 2, y: canvas.height - 80 },
+        bullets: [],
+        asteroids: [],
+        stars: [],
+        lastShot: 0,
+        lastAsteroid: 0,
+        lives: 3,
+        level: miniGameLevel,
+        highScore: parseInt(localStorage.getItem('spaceHigh') || '0')
+    };
+    
+    // Create stars
+    for (let i = 0; i < 100; i++) {
+        miniGameData.stars.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            speed: Math.random() * 2 + 1,
+            size: Math.random() * 2 + 1
+        });
+    }
+    
+    overlay.classList.remove('visible');
+    requestAnimationFrame(spaceLoop);
+}
+
+function spaceLoop(timestamp) {
+    if (currentMode !== MODE_MINIGAME_SPACE) return;
+    
+    const time = timestamp / 1000;
+    const data = miniGameData;
+    
+    // Ship movement
+    if (keysPressed.left) data.ship.x -= 6;
+    if (keysPressed.right) data.ship.x += 6;
+    if (keysPressed.up) data.ship.y -= 4;
+    if (keysPressed.down) data.ship.y += 4;
+    data.ship.x = Math.max(30, Math.min(canvas.width - 30, data.ship.x));
+    data.ship.y = Math.max(100, Math.min(canvas.height - 50, data.ship.y));
+    
+    // Spawn asteroids
+    if (time - data.lastAsteroid > 1.5 - data.level * 0.3) {
+        data.asteroids.push({
+            x: Math.random() * (canvas.width - 60) + 30,
+            y: -40,
+            speed: 2 + data.level + Math.random() * 2,
+            size: 20 + Math.random() * 20,
+            rotation: 0
+        });
+        data.lastAsteroid = time;
+    }
+    
+    // Update bullets
+    data.bullets.forEach(b => b.y -= 10);
+    data.bullets = data.bullets.filter(b => b.y > 0);
+    
+    // Update asteroids
+    data.asteroids.forEach(a => {
+        a.y += a.speed;
+        a.rotation += 0.05;
+    });
+    
+    // Bullet-asteroid collision
+    for (let i = data.asteroids.length - 1; i >= 0; i--) {
+        const a = data.asteroids[i];
+        for (let j = data.bullets.length - 1; j >= 0; j--) {
+            const b = data.bullets[j];
+            const dx = a.x - b.x;
+            const dy = a.y - b.y;
+            if (Math.sqrt(dx*dx + dy*dy) < a.size) {
+                data.asteroids.splice(i, 1);
+                data.bullets.splice(j, 1);
+                miniGameScore += 10;
+                break;
+            }
+        }
+    }
+    
+    // Ship-asteroid collision
+    for (let i = data.asteroids.length - 1; i >= 0; i--) {
+        const a = data.asteroids[i];
+        const dx = a.x - data.ship.x;
+        const dy = a.y - data.ship.y;
+        if (Math.sqrt(dx*dx + dy*dy) < a.size + 20) {
+            data.asteroids.splice(i, 1);
+            data.lives--;
+            if (data.lives <= 0) {
+                endSpacePanda();
+                return;
+            }
+        }
+    }
+    
+    // Remove off-screen asteroids
+    data.asteroids = data.asteroids.filter(a => a.y < canvas.height + 50);
+    
+    // Update stars
+    data.stars.forEach(s => {
+        s.y += s.speed;
+        if (s.y > canvas.height) {
+            s.y = 0;
+            s.x = Math.random() * canvas.width;
+        }
+    });
+    
+    // Draw
+    ctx.fillStyle = '#0a0a1a';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Stars
+    data.stars.forEach(s => {
+        ctx.fillStyle = `rgba(255,255,255,${0.5 + Math.random() * 0.5})`;
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+        ctx.fill();
+    });
+    
+    // Asteroids
+    data.asteroids.forEach(a => {
+        ctx.save();
+        ctx.translate(a.x, a.y);
+        ctx.rotate(a.rotation);
+        ctx.fillStyle = '#666';
+        ctx.beginPath();
+        ctx.arc(0, 0, a.size, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#555';
+        ctx.beginPath();
+        ctx.arc(-a.size/3, -a.size/3, a.size/4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+    });
+    
+    // Bullets
+    ctx.fillStyle = '#4ade80';
+    data.bullets.forEach(b => {
+        ctx.beginPath();
+        ctx.ellipse(b.x, b.y, 3, 10, 0, 0, Math.PI * 2);
+        ctx.fill();
+    });
+    
+    // Ship (panda in rocket)
+    ctx.fillStyle = '#3b82f6';
+    ctx.beginPath();
+    ctx.moveTo(data.ship.x, data.ship.y - 30);
+    ctx.lineTo(data.ship.x - 20, data.ship.y + 20);
+    ctx.lineTo(data.ship.x + 20, data.ship.y + 20);
+    ctx.closePath();
+    ctx.fill();
+    
+    // Panda face in cockpit
+    ctx.fillStyle = '#fff';
+    ctx.beginPath();
+    ctx.arc(data.ship.x, data.ship.y, 12, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#000';
+    ctx.beginPath();
+    ctx.arc(data.ship.x - 4, data.ship.y - 2, 3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(data.ship.x + 4, data.ship.y - 2, 3, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Flames
+    ctx.fillStyle = '#f97316';
+    ctx.beginPath();
+    ctx.moveTo(data.ship.x - 8, data.ship.y + 20);
+    ctx.lineTo(data.ship.x, data.ship.y + 35 + Math.random() * 10);
+    ctx.lineTo(data.ship.x + 8, data.ship.y + 20);
+    ctx.fill();
+    
+    // UI
+    ctx.font = 'bold 20px sans-serif';
+    ctx.fillStyle = '#fff';
+    ctx.textAlign = 'left';
+    ctx.fillText(`Score: ${miniGameScore}`, 20, 30);
+    ctx.fillText(`Lives: ${'🚀'.repeat(data.lives)}`, 20, 55);
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#3b82f6';
+    ctx.fillText('🚀 SPACE PANDA', canvas.width / 2, 30);
+    ctx.textAlign = 'right';
+    ctx.fillStyle = '#fff';
+    ctx.fillText(`🏆 ${data.highScore}`, canvas.width - 20, 30);
+    
+    ctx.font = '14px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('SPACE to shoot!', canvas.width / 2, canvas.height - 20);
+    
+    requestAnimationFrame(spaceLoop);
+}
+
+function handleSpaceKeys(key) {
+    if (key === 'Escape') {
+        endSpacePanda();
+        return;
+    }
+    const data = miniGameData;
+    const time = performance.now() / 1000;
+    if (key === ' ' && time - data.lastShot > 0.2) {
+        data.bullets.push({ x: data.ship.x, y: data.ship.y - 30 });
+        data.lastShot = time;
+    }
+}
+
+function endSpacePanda() {
+    const data = miniGameData;
+    if (miniGameScore > data.highScore) {
+        localStorage.setItem('spaceHigh', miniGameScore.toString());
+    }
+    if (miniGameScore >= 100) {
+        markGameCompleted('space', miniGameLevel);
+    }
+    currentMode = MODE_PARTY_HUB;
+    startPartyHub();
+}
+
+// ==================== BUNDLE 2: SLIDE PUZZLE ====================
+function startSlidePuzzle() {
+    currentMode = MODE_MINIGAME_PUZZLE;
+    partyStartTime = performance.now() / 1000;
+    
+    const size = 2 + miniGameLevel; // 3x3, 4x4, 5x5
+    const tiles = [];
+    for (let i = 0; i < size * size - 1; i++) {
+        tiles.push(i + 1);
+    }
+    tiles.push(0); // Empty space
+    
+    // Shuffle
+    for (let i = tiles.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [tiles[i], tiles[j]] = [tiles[j], tiles[i]];
+    }
+    
+    miniGameData = {
+        tiles: tiles,
+        size: size,
+        moves: 0,
+        selected: size * size - 1,
+        solved: false,
+        bestMoves: parseInt(localStorage.getItem(`puzzleBest${size}`) || '999')
+    };
+    
+    overlay.classList.remove('visible');
+    requestAnimationFrame(puzzleLoop);
+}
+
+function puzzleLoop(timestamp) {
+    if (currentMode !== MODE_MINIGAME_PUZZLE) return;
+    
+    const time = timestamp / 1000 - partyStartTime;
+    const data = miniGameData;
+    const tileSize = Math.min(80, (canvas.width - 100) / data.size);
+    const startX = (canvas.width - data.size * tileSize) / 2;
+    const startY = 120;
+    
+    // Check if solved
+    let solved = true;
+    for (let i = 0; i < data.tiles.length - 1; i++) {
+        if (data.tiles[i] !== i + 1) {
+            solved = false;
+            break;
+        }
+    }
+    if (solved && !data.solved) {
+        data.solved = true;
+        if (data.moves < data.bestMoves) {
+            localStorage.setItem(`puzzleBest${data.size}`, data.moves.toString());
+            data.bestMoves = data.moves;
+        }
+        markGameCompleted('puzzle', miniGameLevel);
+    }
+    
+    // Draw
+    const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    gradient.addColorStop(0, '#4c1d95');
+    gradient.addColorStop(1, '#1e1b4b');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Title
+    ctx.font = 'bold 28px sans-serif';
+    ctx.fillStyle = '#a855f7';
+    ctx.textAlign = 'center';
+    ctx.fillText('🧩 SLIDE PUZZLE', canvas.width / 2, 40);
+    
+    ctx.font = '18px sans-serif';
+    ctx.fillStyle = '#fff';
+    ctx.fillText(`Moves: ${data.moves} | Best: ${data.bestMoves === 999 ? '-' : data.bestMoves}`, canvas.width / 2, 70);
+    ctx.fillText(`${data.size}x${data.size} Grid`, canvas.width / 2, 95);
+    
+    // Draw tiles
+    data.tiles.forEach((tile, index) => {
+        const row = Math.floor(index / data.size);
+        const col = index % data.size;
+        const x = startX + col * tileSize;
+        const y = startY + row * tileSize;
+        
+        if (tile !== 0) {
+            // Tile background
+            const isAdjacent = canMoveTile(index);
+            ctx.fillStyle = isAdjacent ? '#8b5cf6' : '#6366f1';
+            ctx.fillRect(x + 2, y + 2, tileSize - 4, tileSize - 4);
+            
+            // Tile border
+            ctx.strokeStyle = '#c4b5fd';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(x + 2, y + 2, tileSize - 4, tileSize - 4);
+            
+            // Number
+            ctx.font = `bold ${tileSize / 2}px sans-serif`;
+            ctx.fillStyle = '#fff';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(tile.toString(), x + tileSize / 2, y + tileSize / 2);
+        }
+    });
+    
+    // Instructions
+    ctx.font = '16px sans-serif';
+    ctx.fillStyle = '#c4b5fd';
+    ctx.textBaseline = 'alphabetic';
+    ctx.fillText('Click a tile or use arrow keys to slide!', canvas.width / 2, canvas.height - 60);
+    ctx.fillText('Arrange numbers 1 to ' + (data.size * data.size - 1), canvas.width / 2, canvas.height - 35);
+    
+    if (data.solved) {
+        ctx.fillStyle = 'rgba(0,0,0,0.7)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.font = 'bold 40px sans-serif';
+        ctx.fillStyle = '#4ade80';
+        ctx.fillText('🎉 SOLVED! 🎉', canvas.width / 2, canvas.height / 2);
+        ctx.font = '20px sans-serif';
+        ctx.fillStyle = '#fff';
+        ctx.fillText(`Completed in ${data.moves} moves!`, canvas.width / 2, canvas.height / 2 + 40);
+        ctx.fillText('Press ENTER to continue', canvas.width / 2, canvas.height / 2 + 70);
+    }
+    
+    requestAnimationFrame(puzzleLoop);
+}
+
+function canMoveTile(index) {
+    const data = miniGameData;
+    const emptyIndex = data.tiles.indexOf(0);
+    const row = Math.floor(index / data.size);
+    const col = index % data.size;
+    const emptyRow = Math.floor(emptyIndex / data.size);
+    const emptyCol = emptyIndex % data.size;
+    
+    return (Math.abs(row - emptyRow) === 1 && col === emptyCol) ||
+           (Math.abs(col - emptyCol) === 1 && row === emptyRow);
+}
+
+function moveTile(index) {
+    const data = miniGameData;
+    if (data.solved) return;
+    
+    if (canMoveTile(index)) {
+        const emptyIndex = data.tiles.indexOf(0);
+        [data.tiles[index], data.tiles[emptyIndex]] = [data.tiles[emptyIndex], data.tiles[index]];
+        data.moves++;
+    }
+}
+
+function handlePuzzleKeys(key) {
+    const data = miniGameData;
+    
+    if (data.solved && key === 'Enter') {
+        endSlidePuzzle();
+        return;
+    }
+    
+    if (key === 'Escape') {
+        endSlidePuzzle();
+        return;
+    }
+    
+    const emptyIndex = data.tiles.indexOf(0);
+    const emptyRow = Math.floor(emptyIndex / data.size);
+    const emptyCol = emptyIndex % data.size;
+    
+    if (key === 'ArrowUp' && emptyRow < data.size - 1) {
+        moveTile(emptyIndex + data.size);
+    }
+    if (key === 'ArrowDown' && emptyRow > 0) {
+        moveTile(emptyIndex - data.size);
+    }
+    if (key === 'ArrowLeft' && emptyCol < data.size - 1) {
+        moveTile(emptyIndex + 1);
+    }
+    if (key === 'ArrowRight' && emptyCol > 0) {
+        moveTile(emptyIndex - 1);
+    }
+}
+
+function endSlidePuzzle() {
+    currentMode = MODE_PARTY_HUB;
+    startPartyHub();
 }
 
 function gameOver() {
