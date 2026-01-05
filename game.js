@@ -370,6 +370,10 @@ function handleMapKeys(key) {
             startLevel(levelNum);
         }
     }
+    // P for Party!
+    if (key === 'p' || key === 'P') {
+        startPartyHub();
+    }
 }
 
 function handleGameKeys(key) {
@@ -829,10 +833,35 @@ function drawMap() {
     ctx.textAlign = 'center';
     ctx.fillText('WORLD MAP', canvas.width / 2, 40);
 
+    // Party button in corner
+    const partyBtnX = canvas.width - 70;
+    const partyBtnY = 45;
+    
+    // Button background
+    ctx.fillStyle = '#ff6b6b';
+    ctx.beginPath();
+    ctx.roundRect(partyBtnX - 50, partyBtnY - 20, 100, 40, 10);
+    ctx.fill();
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+    
+    // Button text
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 16px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('🎉 PARTY', partyBtnX, partyBtnY + 5);
+    
+    // Key hint
+    ctx.font = '12px sans-serif';
+    ctx.fillStyle = '#ffcdd2';
+    ctx.fillText('Press P', partyBtnX, partyBtnY + 22);
+
     // Instructions
     ctx.font = '16px Quicksand, sans-serif';
     ctx.fillStyle = '#333';
-    ctx.fillText('Arrow keys to select, ENTER to play', canvas.width / 2, canvas.height - 20);
+    ctx.textAlign = 'center';
+    ctx.fillText('Arrow keys to select, ENTER to play, P for Party!', canvas.width / 2, canvas.height - 20);
 }
 
 function drawLevelMarker(level, isSelected) {
@@ -1031,7 +1060,7 @@ function showMap() {
     levelIndicator.style.display = 'none';
     goalIndicator.style.display = 'none';
     currentLevelDisplay.textContent = '-';
-    controlsHint.innerHTML = 'Use <span class="key">←</span> <span class="key">→</span> <span class="key">↑</span> <span class="key">↓</span> to select | <span class="key">ENTER</span> to play';
+    controlsHint.innerHTML = 'Use <span class="key">←</span> <span class="key">→</span> <span class="key">↑</span> <span class="key">↓</span> to select | <span class="key">ENTER</span> to play | <span class="key">P</span> for PARTY 🎉';
     
     drawMap();
     requestAnimationFrame(mapLoop);
