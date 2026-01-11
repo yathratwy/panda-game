@@ -225,6 +225,472 @@ const levels = [
             { type: 'rock', x: 250, y: 250 }, { type: 'rock', x: 550, y: 250 },
             { type: 'bridge', x: 400, y: 150, width: 120, height: 30 }
         ]
+    },
+    // NEW LEVELS 11-14
+    {
+        id: 11, name: "Sunset Beach", icon: "🌅",
+        x: 700, y: 320, unlocked: false, completed: false, stars: 0,
+        bambooGoal: 9, maxJaguars: 2, jaguarSpeed: 1.6, spawnInterval: 11000,
+        theme: { bg1: '#ffccbc', bg2: '#ffab91', bg3: '#ff8a65', grassColor: '#bf360c' },
+        obstacles: [
+            { type: 'tree', x: 200, y: 150 }, { type: 'tree', x: 600, y: 150 },
+            { type: 'rock', x: 350, y: 300 }, { type: 'rock', x: 450, y: 300 },
+            { type: 'bridge', x: 400, y: 400, width: 150, height: 30 }
+        ]
+    },
+    {
+        id: 12, name: "Starlight Valley", icon: "✨",
+        x: 250, y: 420, unlocked: false, completed: false, stars: 0,
+        bambooGoal: 10, maxJaguars: 2, jaguarSpeed: 1.7, spawnInterval: 10000,
+        theme: { bg1: '#303f9f', bg2: '#283593', bg3: '#1a237e', grassColor: '#3f51b5' },
+        obstacles: [
+            { type: 'tree', x: 120, y: 180 }, { type: 'tree', x: 680, y: 180 },
+            { type: 'tree', x: 120, y: 320 }, { type: 'tree', x: 680, y: 320 },
+            { type: 'rock', x: 300, y: 250 }, { type: 'rock', x: 500, y: 250 },
+            { type: 'bridge', x: 400, y: 120, width: 120, height: 30 }
+        ]
+    },
+    {
+        id: 13, name: "Rainbow Falls", icon: "🌈",
+        x: 550, y: 450, unlocked: false, completed: false, stars: 0,
+        bambooGoal: 11, maxJaguars: 3, jaguarSpeed: 1.6, spawnInterval: 10000,
+        theme: { bg1: '#e8f5e9', bg2: '#c8e6c9', bg3: '#a5d6a7', grassColor: '#43a047' },
+        obstacles: [
+            { type: 'tree', x: 150, y: 130 }, { type: 'tree', x: 650, y: 130 },
+            { type: 'tree', x: 150, y: 370 }, { type: 'tree', x: 650, y: 370 },
+            { type: 'rock', x: 280, y: 200 }, { type: 'rock', x: 520, y: 200 },
+            { type: 'rock', x: 400, y: 350 },
+            { type: 'bridge', x: 400, y: 250, width: 140, height: 30 }
+        ]
+    },
+    {
+        id: 14, name: "Dragon's Peak", icon: "🐉",
+        x: 700, y: 420, unlocked: false, completed: false, stars: 0,
+        bambooGoal: 12, maxJaguars: 3, jaguarSpeed: 1.8, spawnInterval: 9000,
+        theme: { bg1: '#ffcdd2', bg2: '#ef9a9a', bg3: '#e57373', grassColor: '#c62828' },
+        obstacles: [
+            { type: 'rock', x: 150, y: 150 }, { type: 'rock', x: 650, y: 150 },
+            { type: 'rock', x: 150, y: 350 }, { type: 'rock', x: 650, y: 350 },
+            { type: 'rock', x: 300, y: 250 }, { type: 'rock', x: 500, y: 250 },
+            { type: 'tree', x: 400, y: 150 }, { type: 'tree', x: 400, y: 350 },
+            { type: 'bridge', x: 400, y: 420, width: 120, height: 30 }
+        ]
+    },
+    // NEW LEVELS 16-20
+    {
+        id: 15, name: "Candy Kingdom", icon: "🍭",
+        x: 150, y: 480, unlocked: false, completed: false, stars: 0,
+        bambooGoal: 10, maxJaguars: 2, jaguarSpeed: 1.6, spawnInterval: 11000,
+        theme: { bg1: '#f8bbd9', bg2: '#f48fb1', bg3: '#ec407a', grassColor: '#d81b60' },
+        obstacles: [
+            { type: 'tree', x: 180, y: 150 }, { type: 'tree', x: 620, y: 150 },
+            { type: 'rock', x: 300, y: 280 }, { type: 'rock', x: 500, y: 280 },
+            { type: 'bridge', x: 400, y: 380, width: 130, height: 30 }
+        ]
+    },
+    {
+        id: 16, name: "Frozen Tundra", icon: "❄️",
+        x: 300, y: 510, unlocked: false, completed: false, stars: 0,
+        bambooGoal: 11, maxJaguars: 2, jaguarSpeed: 1.7, spawnInterval: 10000,
+        theme: { bg1: '#e3f2fd', bg2: '#bbdefb', bg3: '#90caf9', grassColor: '#1976d2' },
+        obstacles: [
+            { type: 'rock', x: 150, y: 130 }, { type: 'rock', x: 650, y: 130 },
+            { type: 'rock', x: 150, y: 370 }, { type: 'rock', x: 650, y: 370 },
+            { type: 'tree', x: 400, y: 200 },
+            { type: 'bridge', x: 250, y: 300, width: 100, height: 30 },
+            { type: 'bridge', x: 550, y: 300, width: 100, height: 30 }
+        ]
+    },
+    {
+        id: 17, name: "Cloud Castle", icon: "☁️",
+        x: 650, y: 500, unlocked: false, completed: false, stars: 0,
+        bambooGoal: 13, maxJaguars: 3, jaguarSpeed: 1.7, spawnInterval: 9500,
+        theme: { bg1: '#e8eaf6', bg2: '#c5cae9', bg3: '#9fa8da', grassColor: '#5c6bc0' },
+        obstacles: [
+            { type: 'bridge', x: 200, y: 150, width: 120, height: 30 },
+            { type: 'bridge', x: 600, y: 150, width: 120, height: 30 },
+            { type: 'bridge', x: 400, y: 250, width: 150, height: 30 },
+            { type: 'bridge', x: 200, y: 350, width: 120, height: 30 },
+            { type: 'bridge', x: 600, y: 350, width: 120, height: 30 },
+            { type: 'rock', x: 400, y: 400 }
+        ]
+    },
+    {
+        id: 18, name: "Panda Temple", icon: "🏯",
+        x: 400, y: 540, unlocked: false, completed: false, stars: 0,
+        bambooGoal: 15, maxJaguars: 3, jaguarSpeed: 1.9, spawnInterval: 8500,
+        theme: { bg1: '#fff8e1', bg2: '#ffecb3', bg3: '#ffe082', grassColor: '#ffc107' },
+        obstacles: [
+            { type: 'tree', x: 120, y: 120 }, { type: 'tree', x: 680, y: 120 },
+            { type: 'tree', x: 120, y: 380 }, { type: 'tree', x: 680, y: 380 },
+            { type: 'rock', x: 280, y: 200 }, { type: 'rock', x: 520, y: 200 },
+            { type: 'rock', x: 280, y: 300 }, { type: 'rock', x: 520, y: 300 },
+            { type: 'bridge', x: 400, y: 250, width: 160, height: 30 }
+        ]
+    },
+    // NEW LEVELS 19-22
+    {
+        id: 19, name: "Honey Hive", icon: "🍯",
+        x: 650, y: 540, unlocked: false, completed: false, stars: 0,
+        bambooGoal: 11, maxJaguars: 2, jaguarSpeed: 1.7, spawnInterval: 10000,
+        theme: { bg1: '#ffecb3', bg2: '#ffd54f', bg3: '#ffca28', grassColor: '#ff8f00' },
+        obstacles: [
+            { type: 'rock', x: 150, y: 180 }, { type: 'rock', x: 650, y: 180 },
+            { type: 'tree', x: 300, y: 300 }, { type: 'tree', x: 500, y: 300 },
+            { type: 'bridge', x: 400, y: 150, width: 120, height: 30 },
+            { type: 'bridge', x: 400, y: 380, width: 120, height: 30 }
+        ]
+    },
+    {
+        id: 20, name: "Aurora Sky", icon: "🌌",
+        x: 250, y: 580, unlocked: false, completed: false, stars: 0,
+        bambooGoal: 12, maxJaguars: 2, jaguarSpeed: 1.8, spawnInterval: 9500,
+        theme: { bg1: '#1a237e', bg2: '#283593', bg3: '#3949ab', grassColor: '#5c6bc0' },
+        obstacles: [
+            { type: 'rock', x: 180, y: 150 }, { type: 'rock', x: 620, y: 150 },
+            { type: 'rock', x: 180, y: 350 }, { type: 'rock', x: 620, y: 350 },
+            { type: 'tree', x: 400, y: 200 }, { type: 'tree', x: 400, y: 300 },
+            { type: 'bridge', x: 280, y: 250, width: 100, height: 30 },
+            { type: 'bridge', x: 520, y: 250, width: 100, height: 30 }
+        ]
+    },
+    {
+        id: 21, name: "Coral Reef", icon: "🐚",
+        x: 550, y: 580, unlocked: false, completed: false, stars: 0,
+        bambooGoal: 13, maxJaguars: 3, jaguarSpeed: 1.7, spawnInterval: 9000,
+        theme: { bg1: '#e0f7fa', bg2: '#80deea', bg3: '#26c6da', grassColor: '#00acc1' },
+        obstacles: [
+            { type: 'rock', x: 200, y: 180 }, { type: 'rock', x: 600, y: 180 },
+            { type: 'rock', x: 300, y: 320 }, { type: 'rock', x: 500, y: 320 },
+            { type: 'tree', x: 400, y: 150 },
+            { type: 'bridge', x: 400, y: 400, width: 140, height: 30 }
+        ]
+    },
+    {
+        id: 22, name: "Golden Summit", icon: "🏆",
+        x: 400, y: 620, unlocked: false, completed: false, stars: 0,
+        bambooGoal: 15, maxJaguars: 3, jaguarSpeed: 1.9, spawnInterval: 8000,
+        theme: { bg1: '#fff59d', bg2: '#ffee58', bg3: '#fdd835', grassColor: '#f9a825' },
+        obstacles: [
+            { type: 'tree', x: 150, y: 130 }, { type: 'tree', x: 650, y: 130 },
+            { type: 'tree', x: 150, y: 370 }, { type: 'tree', x: 650, y: 370 },
+            { type: 'rock', x: 300, y: 200 }, { type: 'rock', x: 500, y: 200 },
+            { type: 'rock', x: 300, y: 300 }, { type: 'rock', x: 500, y: 300 },
+            { type: 'bridge', x: 400, y: 250, width: 140, height: 30 }
+        ]
+    },
+    // NEW LEVELS 23-27
+    {
+        id: 23, name: "Moonlight Garden", icon: "🌙",
+        x: 180, y: 620, unlocked: false, completed: false, stars: 0,
+        bambooGoal: 11, maxJaguars: 2, jaguarSpeed: 1.7, spawnInterval: 10000,
+        theme: { bg1: '#311b92', bg2: '#4527a0', bg3: '#512da8', grassColor: '#7c4dff' },
+        obstacles: [
+            { type: 'tree', x: 200, y: 180 }, { type: 'tree', x: 600, y: 180 },
+            { type: 'rock', x: 350, y: 300 }, { type: 'rock', x: 450, y: 300 },
+            { type: 'bridge', x: 400, y: 150, width: 120, height: 30 }
+        ]
+    },
+    {
+        id: 24, name: "Firefly Forest", icon: "✨",
+        x: 620, y: 620, unlocked: false, completed: false, stars: 0,
+        bambooGoal: 12, maxJaguars: 2, jaguarSpeed: 1.8, spawnInterval: 9500,
+        theme: { bg1: '#1b5e20', bg2: '#2e7d32', bg3: '#388e3c', grassColor: '#4caf50' },
+        obstacles: [
+            { type: 'tree', x: 150, y: 150 }, { type: 'tree', x: 650, y: 150 },
+            { type: 'tree', x: 150, y: 350 }, { type: 'tree', x: 650, y: 350 },
+            { type: 'tree', x: 400, y: 250 },
+            { type: 'bridge', x: 280, y: 200, width: 100, height: 30 }
+        ]
+    },
+    {
+        id: 25, name: "Diamond Mine", icon: "💎",
+        x: 280, y: 680, unlocked: false, completed: false, stars: 0,
+        bambooGoal: 13, maxJaguars: 3, jaguarSpeed: 1.8, spawnInterval: 9000,
+        theme: { bg1: '#37474f', bg2: '#455a64', bg3: '#546e7a', grassColor: '#78909c' },
+        obstacles: [
+            { type: 'rock', x: 180, y: 150 }, { type: 'rock', x: 620, y: 150 },
+            { type: 'rock', x: 180, y: 350 }, { type: 'rock', x: 620, y: 350 },
+            { type: 'rock', x: 400, y: 250 },
+            { type: 'bridge', x: 300, y: 300, width: 100, height: 30 },
+            { type: 'bridge', x: 500, y: 300, width: 100, height: 30 }
+        ]
+    },
+    {
+        id: 26, name: "Butterfly Valley", icon: "🦋",
+        x: 520, y: 680, unlocked: false, completed: false, stars: 0,
+        bambooGoal: 14, maxJaguars: 3, jaguarSpeed: 1.8, spawnInterval: 8500,
+        theme: { bg1: '#fce4ec', bg2: '#f8bbd9', bg3: '#f48fb1', grassColor: '#e91e63' },
+        obstacles: [
+            { type: 'tree', x: 200, y: 150 }, { type: 'tree', x: 600, y: 150 },
+            { type: 'tree', x: 200, y: 350 }, { type: 'tree', x: 600, y: 350 },
+            { type: 'rock', x: 400, y: 200 }, { type: 'rock', x: 400, y: 300 },
+            { type: 'bridge', x: 400, y: 400, width: 130, height: 30 }
+        ]
+    },
+    {
+        id: 27, name: "Panda Legend", icon: "👑",
+        x: 400, y: 720, unlocked: false, completed: false, stars: 0,
+        bambooGoal: 18, maxJaguars: 3, jaguarSpeed: 2.0, spawnInterval: 7500,
+        theme: { bg1: '#b71c1c', bg2: '#c62828', bg3: '#d32f2f', grassColor: '#ff5722' },
+        obstacles: [
+            { type: 'tree', x: 120, y: 120 }, { type: 'tree', x: 680, y: 120 },
+            { type: 'tree', x: 120, y: 380 }, { type: 'tree', x: 680, y: 380 },
+            { type: 'rock', x: 250, y: 180 }, { type: 'rock', x: 550, y: 180 },
+            { type: 'rock', x: 250, y: 320 }, { type: 'rock', x: 550, y: 320 },
+            { type: 'rock', x: 400, y: 250 },
+            { type: 'bridge', x: 400, y: 400, width: 150, height: 30 }
+        ]
+    },
+    // NEW LEVELS 28-32
+    {
+        id: 28, name: "Cotton Candy Clouds", icon: "☁️",
+        x: 180, y: 720, unlocked: false, completed: false, stars: 0,
+        bambooGoal: 12, maxJaguars: 2, jaguarSpeed: 1.7, spawnInterval: 10000,
+        theme: { bg1: '#f3e5f5', bg2: '#e1bee7', bg3: '#ce93d8', grassColor: '#ab47bc' },
+        obstacles: [
+            { type: 'bridge', x: 200, y: 150, width: 100, height: 30 },
+            { type: 'bridge', x: 600, y: 150, width: 100, height: 30 },
+            { type: 'bridge', x: 400, y: 250, width: 120, height: 30 },
+            { type: 'bridge', x: 200, y: 350, width: 100, height: 30 },
+            { type: 'bridge', x: 600, y: 350, width: 100, height: 30 }
+        ]
+    },
+    {
+        id: 29, name: "Pirate Cove", icon: "🏴‍☠️",
+        x: 620, y: 720, unlocked: false, completed: false, stars: 0,
+        bambooGoal: 13, maxJaguars: 2, jaguarSpeed: 1.8, spawnInterval: 9500,
+        theme: { bg1: '#5d4037', bg2: '#6d4c41', bg3: '#795548', grassColor: '#a1887f' },
+        obstacles: [
+            { type: 'rock', x: 200, y: 180 }, { type: 'rock', x: 600, y: 180 },
+            { type: 'tree', x: 300, y: 300 }, { type: 'tree', x: 500, y: 300 },
+            { type: 'bridge', x: 400, y: 380, width: 140, height: 30 }
+        ]
+    },
+    {
+        id: 30, name: "Neon City", icon: "🌃",
+        x: 280, y: 780, unlocked: false, completed: false, stars: 0,
+        bambooGoal: 14, maxJaguars: 3, jaguarSpeed: 1.9, spawnInterval: 9000,
+        theme: { bg1: '#0d47a1', bg2: '#1565c0', bg3: '#1976d2', grassColor: '#42a5f5' },
+        obstacles: [
+            { type: 'rock', x: 150, y: 150 }, { type: 'rock', x: 650, y: 150 },
+            { type: 'rock', x: 150, y: 350 }, { type: 'rock', x: 650, y: 350 },
+            { type: 'rock', x: 300, y: 250 }, { type: 'rock', x: 500, y: 250 },
+            { type: 'bridge', x: 400, y: 180, width: 100, height: 30 }
+        ]
+    },
+    {
+        id: 31, name: "Sakura Springs", icon: "🌸",
+        x: 520, y: 780, unlocked: false, completed: false, stars: 0,
+        bambooGoal: 15, maxJaguars: 3, jaguarSpeed: 1.9, spawnInterval: 8500,
+        theme: { bg1: '#fce4ec', bg2: '#f8bbd9', bg3: '#f48fb1', grassColor: '#ec407a' },
+        obstacles: [
+            { type: 'tree', x: 180, y: 150 }, { type: 'tree', x: 620, y: 150 },
+            { type: 'tree', x: 180, y: 350 }, { type: 'tree', x: 620, y: 350 },
+            { type: 'tree', x: 400, y: 250 },
+            { type: 'bridge', x: 280, y: 280, width: 80, height: 30 },
+            { type: 'bridge', x: 520, y: 280, width: 80, height: 30 }
+        ]
+    },
+    {
+        id: 32, name: "Infinity Peak", icon: "♾️",
+        x: 400, y: 820, unlocked: false, completed: false, stars: 0,
+        bambooGoal: 20, maxJaguars: 3, jaguarSpeed: 2.1, spawnInterval: 7000,
+        theme: { bg1: '#263238', bg2: '#37474f', bg3: '#455a64', grassColor: '#607d8b' },
+        obstacles: [
+            { type: 'tree', x: 120, y: 120 }, { type: 'tree', x: 680, y: 120 },
+            { type: 'tree', x: 120, y: 380 }, { type: 'tree', x: 680, y: 380 },
+            { type: 'rock', x: 280, y: 180 }, { type: 'rock', x: 520, y: 180 },
+            { type: 'rock', x: 280, y: 320 }, { type: 'rock', x: 520, y: 320 },
+            { type: 'rock', x: 400, y: 250 },
+            { type: 'bridge', x: 400, y: 400, width: 160, height: 30 }
+        ]
+    },
+    // LEVELS 33-48: THE ULTIMATE CHALLENGE
+    {
+        id: 33, name: "Firefly Forest", icon: "✨",
+        x: 180, y: 880, unlocked: false, completed: false, stars: 0,
+        bambooGoal: 12, maxJaguars: 2, jaguarSpeed: 1.7, spawnInterval: 10000,
+        theme: { bg1: '#1a237e', bg2: '#283593', bg3: '#303f9f', grassColor: '#3949ab' },
+        obstacles: [
+            { type: 'tree', x: 200, y: 150 }, { type: 'tree', x: 600, y: 150 },
+            { type: 'tree', x: 300, y: 300 }, { type: 'tree', x: 500, y: 300 },
+            { type: 'bridge', x: 400, y: 200, width: 100, height: 30 }
+        ]
+    },
+    {
+        id: 34, name: "Candy Kingdom", icon: "🍬",
+        x: 620, y: 880, unlocked: false, completed: false, stars: 0,
+        bambooGoal: 13, maxJaguars: 2, jaguarSpeed: 1.8, spawnInterval: 9500,
+        theme: { bg1: '#e91e63', bg2: '#f06292', bg3: '#f48fb1', grassColor: '#f8bbd9' },
+        obstacles: [
+            { type: 'rock', x: 180, y: 180 }, { type: 'rock', x: 620, y: 180 },
+            { type: 'rock', x: 180, y: 320 }, { type: 'rock', x: 620, y: 320 },
+            { type: 'bridge', x: 400, y: 250, width: 120, height: 30 }
+        ]
+    },
+    {
+        id: 35, name: "Thunderstorm", icon: "⛈️",
+        x: 280, y: 940, unlocked: false, completed: false, stars: 0,
+        bambooGoal: 14, maxJaguars: 2, jaguarSpeed: 1.9, spawnInterval: 9000,
+        theme: { bg1: '#37474f', bg2: '#455a64', bg3: '#546e7a', grassColor: '#78909c' },
+        obstacles: [
+            { type: 'tree', x: 150, y: 150 }, { type: 'tree', x: 650, y: 150 },
+            { type: 'rock', x: 300, y: 250 }, { type: 'rock', x: 500, y: 250 },
+            { type: 'tree', x: 150, y: 350 }, { type: 'tree', x: 650, y: 350 }
+        ]
+    },
+    {
+        id: 36, name: "Honeycomb Hive", icon: "🍯",
+        x: 520, y: 940, unlocked: false, completed: false, stars: 0,
+        bambooGoal: 14, maxJaguars: 2, jaguarSpeed: 1.9, spawnInterval: 9000,
+        theme: { bg1: '#ff8f00', bg2: '#ffa000', bg3: '#ffb300', grassColor: '#ffc107' },
+        obstacles: [
+            { type: 'rock', x: 200, y: 200 }, { type: 'rock', x: 400, y: 200 }, { type: 'rock', x: 600, y: 200 },
+            { type: 'rock', x: 300, y: 300 }, { type: 'rock', x: 500, y: 300 }
+        ]
+    },
+    {
+        id: 37, name: "Coral Reef", icon: "🐠",
+        x: 180, y: 1000, unlocked: false, completed: false, stars: 0,
+        bambooGoal: 15, maxJaguars: 3, jaguarSpeed: 1.8, spawnInterval: 8500,
+        theme: { bg1: '#006064', bg2: '#00838f', bg3: '#0097a7', grassColor: '#00acc1' },
+        obstacles: [
+            { type: 'rock', x: 180, y: 150 }, { type: 'rock', x: 620, y: 150 },
+            { type: 'tree', x: 300, y: 280 }, { type: 'tree', x: 500, y: 280 },
+            { type: 'bridge', x: 400, y: 380, width: 140, height: 30 }
+        ]
+    },
+    {
+        id: 38, name: "Galaxy Swirl", icon: "🌀",
+        x: 620, y: 1000, unlocked: false, completed: false, stars: 0,
+        bambooGoal: 15, maxJaguars: 3, jaguarSpeed: 1.9, spawnInterval: 8500,
+        theme: { bg1: '#4a148c', bg2: '#6a1b9a', bg3: '#7b1fa2', grassColor: '#8e24aa' },
+        obstacles: [
+            { type: 'tree', x: 200, y: 180 }, { type: 'tree', x: 600, y: 180 },
+            { type: 'rock', x: 350, y: 280 }, { type: 'rock', x: 450, y: 280 },
+            { type: 'tree', x: 200, y: 380 }, { type: 'tree', x: 600, y: 380 }
+        ]
+    },
+    {
+        id: 39, name: "Mint Garden", icon: "🌿",
+        x: 400, y: 1000, unlocked: false, completed: false, stars: 0,
+        bambooGoal: 16, maxJaguars: 3, jaguarSpeed: 1.9, spawnInterval: 8000,
+        theme: { bg1: '#00695c', bg2: '#00796b', bg3: '#00897b', grassColor: '#009688' },
+        obstacles: [
+            { type: 'tree', x: 150, y: 150 }, { type: 'tree', x: 650, y: 150 },
+            { type: 'tree', x: 150, y: 350 }, { type: 'tree', x: 650, y: 350 },
+            { type: 'rock', x: 400, y: 250 },
+            { type: 'bridge', x: 280, y: 250, width: 80, height: 30 },
+            { type: 'bridge', x: 520, y: 250, width: 80, height: 30 }
+        ]
+    },
+    {
+        id: 40, name: "Lava Mountain", icon: "🌋",
+        x: 280, y: 1060, unlocked: false, completed: false, stars: 0,
+        bambooGoal: 16, maxJaguars: 3, jaguarSpeed: 2.0, spawnInterval: 8000,
+        theme: { bg1: '#bf360c', bg2: '#d84315', bg3: '#e64a19', grassColor: '#ff5722' },
+        obstacles: [
+            { type: 'rock', x: 200, y: 150 }, { type: 'rock', x: 600, y: 150 },
+            { type: 'rock', x: 200, y: 350 }, { type: 'rock', x: 600, y: 350 },
+            { type: 'rock', x: 300, y: 250 }, { type: 'rock', x: 400, y: 250 }, { type: 'rock', x: 500, y: 250 }
+        ]
+    },
+    {
+        id: 41, name: "Blueberry Hills", icon: "🫐",
+        x: 520, y: 1060, unlocked: false, completed: false, stars: 0,
+        bambooGoal: 17, maxJaguars: 3, jaguarSpeed: 2.0, spawnInterval: 7500,
+        theme: { bg1: '#311b92', bg2: '#4527a0', bg3: '#512da8', grassColor: '#5e35b1' },
+        obstacles: [
+            { type: 'tree', x: 180, y: 180 }, { type: 'tree', x: 620, y: 180 },
+            { type: 'tree', x: 180, y: 320 }, { type: 'tree', x: 620, y: 320 },
+            { type: 'bridge', x: 400, y: 250, width: 150, height: 30 }
+        ]
+    },
+    {
+        id: 42, name: "Starlight Path", icon: "🌟",
+        x: 180, y: 1120, unlocked: false, completed: false, stars: 0,
+        bambooGoal: 17, maxJaguars: 3, jaguarSpeed: 2.0, spawnInterval: 7500,
+        theme: { bg1: '#0d47a1', bg2: '#1565c0', bg3: '#1976d2', grassColor: '#1e88e5' },
+        obstacles: [
+            { type: 'rock', x: 150, y: 150 }, { type: 'rock', x: 650, y: 150 },
+            { type: 'tree', x: 300, y: 250 }, { type: 'tree', x: 500, y: 250 },
+            { type: 'rock', x: 150, y: 350 }, { type: 'rock', x: 650, y: 350 },
+            { type: 'bridge', x: 400, y: 180, width: 100, height: 30 }
+        ]
+    },
+    {
+        id: 43, name: "Peach Paradise", icon: "🍑",
+        x: 620, y: 1120, unlocked: false, completed: false, stars: 0,
+        bambooGoal: 18, maxJaguars: 3, jaguarSpeed: 2.0, spawnInterval: 7500,
+        theme: { bg1: '#ff6f00', bg2: '#ff8f00', bg3: '#ffa000', grassColor: '#ffb300' },
+        obstacles: [
+            { type: 'tree', x: 200, y: 150 }, { type: 'tree', x: 600, y: 150 },
+            { type: 'rock', x: 280, y: 250 }, { type: 'rock', x: 400, y: 250 }, { type: 'rock', x: 520, y: 250 },
+            { type: 'tree', x: 200, y: 350 }, { type: 'tree', x: 600, y: 350 }
+        ]
+    },
+    {
+        id: 44, name: "Mystic Ruins", icon: "🏛️",
+        x: 400, y: 1120, unlocked: false, completed: false, stars: 0,
+        bambooGoal: 18, maxJaguars: 3, jaguarSpeed: 2.1, spawnInterval: 7000,
+        theme: { bg1: '#3e2723', bg2: '#4e342e', bg3: '#5d4037', grassColor: '#6d4c41' },
+        obstacles: [
+            { type: 'rock', x: 180, y: 150 }, { type: 'rock', x: 400, y: 150 }, { type: 'rock', x: 620, y: 150 },
+            { type: 'rock', x: 180, y: 350 }, { type: 'rock', x: 400, y: 350 }, { type: 'rock', x: 620, y: 350 },
+            { type: 'bridge', x: 400, y: 250, width: 160, height: 30 }
+        ]
+    },
+    {
+        id: 45, name: "Electric Storm", icon: "⚡",
+        x: 280, y: 1180, unlocked: false, completed: false, stars: 0,
+        bambooGoal: 19, maxJaguars: 3, jaguarSpeed: 2.1, spawnInterval: 7000,
+        theme: { bg1: '#212121', bg2: '#424242', bg3: '#616161', grassColor: '#ffc107' },
+        obstacles: [
+            { type: 'tree', x: 150, y: 150 }, { type: 'tree', x: 650, y: 150 },
+            { type: 'tree', x: 150, y: 350 }, { type: 'tree', x: 650, y: 350 },
+            { type: 'rock', x: 280, y: 250 }, { type: 'rock', x: 520, y: 250 },
+            { type: 'rock', x: 400, y: 180 }, { type: 'rock', x: 400, y: 320 }
+        ]
+    },
+    {
+        id: 46, name: "Rainbow Bridge", icon: "🌈",
+        x: 520, y: 1180, unlocked: false, completed: false, stars: 0,
+        bambooGoal: 19, maxJaguars: 3, jaguarSpeed: 2.1, spawnInterval: 7000,
+        theme: { bg1: '#e91e63', bg2: '#9c27b0', bg3: '#3f51b5', grassColor: '#4caf50' },
+        obstacles: [
+            { type: 'bridge', x: 200, y: 180, width: 100, height: 30 },
+            { type: 'bridge', x: 600, y: 180, width: 100, height: 30 },
+            { type: 'bridge', x: 400, y: 250, width: 120, height: 30 },
+            { type: 'bridge', x: 200, y: 320, width: 100, height: 30 },
+            { type: 'bridge', x: 600, y: 320, width: 100, height: 30 },
+            { type: 'rock', x: 400, y: 380 }
+        ]
+    },
+    {
+        id: 47, name: "Frozen Tundra", icon: "🥶",
+        x: 180, y: 1240, unlocked: false, completed: false, stars: 0,
+        bambooGoal: 20, maxJaguars: 3, jaguarSpeed: 2.2, spawnInterval: 6500,
+        theme: { bg1: '#b3e5fc', bg2: '#81d4fa', bg3: '#4fc3f7', grassColor: '#29b6f6' },
+        obstacles: [
+            { type: 'rock', x: 150, y: 150 }, { type: 'rock', x: 400, y: 150 }, { type: 'rock', x: 650, y: 150 },
+            { type: 'tree', x: 250, y: 280 }, { type: 'tree', x: 550, y: 280 },
+            { type: 'rock', x: 150, y: 380 }, { type: 'rock', x: 400, y: 380 }, { type: 'rock', x: 650, y: 380 }
+        ]
+    },
+    {
+        id: 48, name: "Panda Paradise", icon: "🐼",
+        x: 400, y: 1280, unlocked: false, completed: false, stars: 0,
+        bambooGoal: 25, maxJaguars: 3, jaguarSpeed: 2.3, spawnInterval: 6000,
+        theme: { bg1: '#1b5e20', bg2: '#2e7d32', bg3: '#388e3c', grassColor: '#43a047' },
+        obstacles: [
+            { type: 'tree', x: 120, y: 120 }, { type: 'tree', x: 680, y: 120 },
+            { type: 'tree', x: 120, y: 380 }, { type: 'tree', x: 680, y: 380 },
+            { type: 'rock', x: 250, y: 180 }, { type: 'rock', x: 550, y: 180 },
+            { type: 'rock', x: 250, y: 320 }, { type: 'rock', x: 550, y: 320 },
+            { type: 'rock', x: 400, y: 250 },
+            { type: 'bridge', x: 400, y: 400, width: 180, height: 30 }
+        ]
     }
 ];
 
@@ -470,11 +936,19 @@ function handleMapKeys(key) {
             startLevel(selectedLevelIndex);
         }
     }
-    if (key >= '1' && key <= '5') {
+    // Number keys 1-9 for levels 1-9, 0 for level 10
+    if (key >= '1' && key <= '9') {
         const levelNum = parseInt(key) - 1;
         if (levels[levelNum] && levels[levelNum].unlocked) {
             selectedLevelIndex = levelNum;
             startLevel(levelNum);
+        }
+    }
+    if (key === '0') {
+        // Level 10
+        if (levels[9] && levels[9].unlocked) {
+            selectedLevelIndex = 9;
+            startLevel(9);
         }
     }
     // P for Party!
@@ -896,16 +1370,48 @@ function drawMap() {
     // Land - larger to fit more levels
     ctx.fillStyle = '#a5d6a7';
     ctx.beginPath();
-    ctx.ellipse(400, 280, 380, 250, 0, 0, Math.PI * 2);
+    ctx.ellipse(400, 320, 390, 290, 0, 0, Math.PI * 2);
     ctx.fill();
     
     // Extra land area
     ctx.fillStyle = '#81c784';
     ctx.beginPath();
-    ctx.ellipse(200, 300, 150, 120, 0, 0, Math.PI * 2);
+    ctx.ellipse(200, 350, 160, 180, 0, 0, Math.PI * 2);
     ctx.fill();
     ctx.beginPath();
-    ctx.ellipse(600, 280, 150, 130, 0, 0, Math.PI * 2);
+    ctx.ellipse(600, 320, 160, 180, 0, 0, Math.PI * 2);
+    ctx.fill();
+    // Bottom land extension for levels 16-23
+    ctx.beginPath();
+    ctx.ellipse(400, 520, 350, 180, 0, 0, Math.PI * 2);
+    ctx.fill();
+    // Extra bottom area for levels 22-27
+    ctx.beginPath();
+    ctx.ellipse(400, 650, 320, 150, 0, 0, Math.PI * 2);
+    ctx.fill();
+    // Area for levels 27-29
+    ctx.beginPath();
+    ctx.ellipse(400, 720, 300, 100, 0, 0, Math.PI * 2);
+    ctx.fill();
+    // Area for levels 30-32
+    ctx.beginPath();
+    ctx.ellipse(400, 800, 280, 100, 0, 0, Math.PI * 2);
+    ctx.fill();
+    // Area for levels 33-36
+    ctx.beginPath();
+    ctx.ellipse(400, 920, 320, 100, 0, 0, Math.PI * 2);
+    ctx.fill();
+    // Area for levels 37-41
+    ctx.beginPath();
+    ctx.ellipse(400, 1040, 320, 100, 0, 0, Math.PI * 2);
+    ctx.fill();
+    // Area for levels 42-46
+    ctx.beginPath();
+    ctx.ellipse(400, 1150, 320, 100, 0, 0, Math.PI * 2);
+    ctx.fill();
+    // Final area for levels 47-48
+    ctx.beginPath();
+    ctx.ellipse(300, 1260, 200, 80, 0, 0, Math.PI * 2);
     ctx.fill();
 
     // Paths between levels
@@ -977,6 +1483,348 @@ function drawMap() {
     ctx.beginPath();
     ctx.moveTo(levels[6].x, levels[6].y);
     ctx.lineTo(levels[9].x, levels[9].y);
+    ctx.stroke();
+    
+    // Level 10 -> 11 (Sunset Beach)
+    ctx.beginPath();
+    ctx.moveTo(levels[9].x, levels[9].y);
+    ctx.lineTo(levels[10].x, levels[10].y);
+    ctx.stroke();
+    
+    // Level 11 -> 12 (Starlight Valley)
+    ctx.beginPath();
+    ctx.moveTo(levels[10].x, levels[10].y);
+    ctx.lineTo(levels[11].x, levels[11].y);
+    ctx.stroke();
+    
+    // Level 12 -> 13 (Rainbow Falls)
+    ctx.beginPath();
+    ctx.moveTo(levels[11].x, levels[11].y);
+    ctx.lineTo(levels[12].x, levels[12].y);
+    ctx.stroke();
+    
+    // Level 13 -> 14 (Dragon's Peak)
+    ctx.beginPath();
+    ctx.moveTo(levels[12].x, levels[12].y);
+    ctx.lineTo(levels[13].x, levels[13].y);
+    ctx.stroke();
+    
+    // Level 12 -> 15 (Starlight Valley to Candy Kingdom)
+    ctx.beginPath();
+    ctx.moveTo(levels[11].x, levels[11].y);
+    ctx.lineTo(levels[14].x, levels[14].y);
+    ctx.stroke();
+    
+    // Level 15 -> 16 (Candy Kingdom to Frozen Tundra)
+    ctx.beginPath();
+    ctx.moveTo(levels[14].x, levels[14].y);
+    ctx.lineTo(levels[15].x, levels[15].y);
+    ctx.stroke();
+    
+    // Level 16 -> 17 (Frozen Tundra to Cloud Castle)
+    ctx.beginPath();
+    ctx.moveTo(levels[15].x, levels[15].y);
+    ctx.lineTo(levels[16].x, levels[16].y);
+    ctx.stroke();
+    
+    // Level 14 -> 17 (Dragon's Peak to Cloud Castle)
+    ctx.beginPath();
+    ctx.moveTo(levels[13].x, levels[13].y);
+    ctx.lineTo(levels[16].x, levels[16].y);
+    ctx.stroke();
+    
+    // Level 17 -> 18 (Cloud Castle to Panda Temple)
+    ctx.beginPath();
+    ctx.moveTo(levels[16].x, levels[16].y);
+    ctx.lineTo(levels[17].x, levels[17].y);
+    ctx.stroke();
+    
+    // Level 16 -> 18 (Frozen Tundra to Panda Temple)
+    ctx.beginPath();
+    ctx.moveTo(levels[15].x, levels[15].y);
+    ctx.lineTo(levels[17].x, levels[17].y);
+    ctx.stroke();
+    
+    // Level 18 -> 19 (Panda Temple to Honey Hive)
+    ctx.beginPath();
+    ctx.moveTo(levels[17].x, levels[17].y);
+    ctx.lineTo(levels[18].x, levels[18].y);
+    ctx.stroke();
+    
+    // Level 19 -> 20 (Honey Hive to Aurora Sky)
+    ctx.beginPath();
+    ctx.moveTo(levels[18].x, levels[18].y);
+    ctx.lineTo(levels[19].x, levels[19].y);
+    ctx.stroke();
+    
+    // Level 19 -> 21 (Honey Hive to Coral Reef)
+    ctx.beginPath();
+    ctx.moveTo(levels[18].x, levels[18].y);
+    ctx.lineTo(levels[20].x, levels[20].y);
+    ctx.stroke();
+    
+    // Level 20 -> 22 (Aurora Sky to Golden Summit)
+    ctx.beginPath();
+    ctx.moveTo(levels[19].x, levels[19].y);
+    ctx.lineTo(levels[21].x, levels[21].y);
+    ctx.stroke();
+    
+    // Level 21 -> 22 (Coral Reef to Golden Summit)
+    ctx.beginPath();
+    ctx.moveTo(levels[20].x, levels[20].y);
+    ctx.lineTo(levels[21].x, levels[21].y);
+    ctx.stroke();
+    
+    // Level 20 -> 23 (Aurora Sky to Moonlight Garden)
+    ctx.beginPath();
+    ctx.moveTo(levels[19].x, levels[19].y);
+    ctx.lineTo(levels[22].x, levels[22].y);
+    ctx.stroke();
+    
+    // Level 22 -> 23 (Golden Summit to Moonlight Garden)
+    ctx.beginPath();
+    ctx.moveTo(levels[21].x, levels[21].y);
+    ctx.lineTo(levels[22].x, levels[22].y);
+    ctx.stroke();
+    
+    // Level 22 -> 24 (Golden Summit to Firefly Forest)
+    ctx.beginPath();
+    ctx.moveTo(levels[21].x, levels[21].y);
+    ctx.lineTo(levels[23].x, levels[23].y);
+    ctx.stroke();
+    
+    // Level 21 -> 24 (Coral Reef to Firefly Forest)
+    ctx.beginPath();
+    ctx.moveTo(levels[20].x, levels[20].y);
+    ctx.lineTo(levels[23].x, levels[23].y);
+    ctx.stroke();
+    
+    // Level 23 -> 25 (Moonlight Garden to Diamond Mine)
+    ctx.beginPath();
+    ctx.moveTo(levels[22].x, levels[22].y);
+    ctx.lineTo(levels[24].x, levels[24].y);
+    ctx.stroke();
+    
+    // Level 24 -> 26 (Firefly Forest to Butterfly Valley)
+    ctx.beginPath();
+    ctx.moveTo(levels[23].x, levels[23].y);
+    ctx.lineTo(levels[25].x, levels[25].y);
+    ctx.stroke();
+    
+    // Level 25 -> 27 (Diamond Mine to Panda Legend)
+    ctx.beginPath();
+    ctx.moveTo(levels[24].x, levels[24].y);
+    ctx.lineTo(levels[26].x, levels[26].y);
+    ctx.stroke();
+    
+    // Level 26 -> 27 (Butterfly Valley to Panda Legend)
+    ctx.beginPath();
+    ctx.moveTo(levels[25].x, levels[25].y);
+    ctx.lineTo(levels[26].x, levels[26].y);
+    ctx.stroke();
+    
+    // Level 25 -> 28 (Diamond Mine to Cotton Candy Clouds)
+    ctx.beginPath();
+    ctx.moveTo(levels[24].x, levels[24].y);
+    ctx.lineTo(levels[27].x, levels[27].y);
+    ctx.stroke();
+    
+    // Level 27 -> 28 (Panda Legend to Cotton Candy Clouds)
+    ctx.beginPath();
+    ctx.moveTo(levels[26].x, levels[26].y);
+    ctx.lineTo(levels[27].x, levels[27].y);
+    ctx.stroke();
+    
+    // Level 27 -> 29 (Panda Legend to Pirate Cove)
+    ctx.beginPath();
+    ctx.moveTo(levels[26].x, levels[26].y);
+    ctx.lineTo(levels[28].x, levels[28].y);
+    ctx.stroke();
+    
+    // Level 26 -> 29 (Butterfly Valley to Pirate Cove)
+    ctx.beginPath();
+    ctx.moveTo(levels[25].x, levels[25].y);
+    ctx.lineTo(levels[28].x, levels[28].y);
+    ctx.stroke();
+    
+    // Level 28 -> 30 (Cotton Candy Clouds to Neon City)
+    ctx.beginPath();
+    ctx.moveTo(levels[27].x, levels[27].y);
+    ctx.lineTo(levels[29].x, levels[29].y);
+    ctx.stroke();
+    
+    // Level 29 -> 31 (Pirate Cove to Sakura Springs)
+    ctx.beginPath();
+    ctx.moveTo(levels[28].x, levels[28].y);
+    ctx.lineTo(levels[30].x, levels[30].y);
+    ctx.stroke();
+    
+    // Level 30 -> 32 (Neon City to Infinity Peak)
+    ctx.beginPath();
+    ctx.moveTo(levels[29].x, levels[29].y);
+    ctx.lineTo(levels[31].x, levels[31].y);
+    ctx.stroke();
+    
+    // Level 31 -> 32 (Sakura Springs to Infinity Peak)
+    ctx.beginPath();
+    ctx.moveTo(levels[30].x, levels[30].y);
+    ctx.lineTo(levels[31].x, levels[31].y);
+    ctx.stroke();
+    
+    // Level 30 -> 33 (Neon City to Firefly Forest)
+    ctx.beginPath();
+    ctx.moveTo(levels[29].x, levels[29].y);
+    ctx.lineTo(levels[32].x, levels[32].y);
+    ctx.stroke();
+    
+    // Level 32 -> 33 (Infinity Peak to Firefly Forest)
+    ctx.beginPath();
+    ctx.moveTo(levels[31].x, levels[31].y);
+    ctx.lineTo(levels[32].x, levels[32].y);
+    ctx.stroke();
+    
+    // Level 32 -> 34 (Infinity Peak to Candy Kingdom)
+    ctx.beginPath();
+    ctx.moveTo(levels[31].x, levels[31].y);
+    ctx.lineTo(levels[33].x, levels[33].y);
+    ctx.stroke();
+    
+    // Level 31 -> 34 (Sakura Springs to Candy Kingdom)
+    ctx.beginPath();
+    ctx.moveTo(levels[30].x, levels[30].y);
+    ctx.lineTo(levels[33].x, levels[33].y);
+    ctx.stroke();
+    
+    // Level 33 -> 35 (Firefly Forest to Thunderstorm)
+    ctx.beginPath();
+    ctx.moveTo(levels[32].x, levels[32].y);
+    ctx.lineTo(levels[34].x, levels[34].y);
+    ctx.stroke();
+    
+    // Level 34 -> 36 (Candy Kingdom to Honeycomb Hive)
+    ctx.beginPath();
+    ctx.moveTo(levels[33].x, levels[33].y);
+    ctx.lineTo(levels[35].x, levels[35].y);
+    ctx.stroke();
+    
+    // Level 35 -> 37 (Thunderstorm to Coral Reef)
+    ctx.beginPath();
+    ctx.moveTo(levels[34].x, levels[34].y);
+    ctx.lineTo(levels[36].x, levels[36].y);
+    ctx.stroke();
+    
+    // Level 36 -> 38 (Honeycomb Hive to Galaxy Swirl)
+    ctx.beginPath();
+    ctx.moveTo(levels[35].x, levels[35].y);
+    ctx.lineTo(levels[37].x, levels[37].y);
+    ctx.stroke();
+    
+    // Level 35 -> 39 (Thunderstorm to Mint Garden)
+    ctx.beginPath();
+    ctx.moveTo(levels[34].x, levels[34].y);
+    ctx.lineTo(levels[38].x, levels[38].y);
+    ctx.stroke();
+    
+    // Level 36 -> 39 (Honeycomb Hive to Mint Garden)
+    ctx.beginPath();
+    ctx.moveTo(levels[35].x, levels[35].y);
+    ctx.lineTo(levels[38].x, levels[38].y);
+    ctx.stroke();
+    
+    // Level 37 -> 39 (Coral Reef to Mint Garden)
+    ctx.beginPath();
+    ctx.moveTo(levels[36].x, levels[36].y);
+    ctx.lineTo(levels[38].x, levels[38].y);
+    ctx.stroke();
+    
+    // Level 38 -> 39 (Galaxy Swirl to Mint Garden)
+    ctx.beginPath();
+    ctx.moveTo(levels[37].x, levels[37].y);
+    ctx.lineTo(levels[38].x, levels[38].y);
+    ctx.stroke();
+    
+    // Level 39 -> 40 (Mint Garden to Lava Mountain)
+    ctx.beginPath();
+    ctx.moveTo(levels[38].x, levels[38].y);
+    ctx.lineTo(levels[39].x, levels[39].y);
+    ctx.stroke();
+    
+    // Level 39 -> 41 (Mint Garden to Blueberry Hills)
+    ctx.beginPath();
+    ctx.moveTo(levels[38].x, levels[38].y);
+    ctx.lineTo(levels[40].x, levels[40].y);
+    ctx.stroke();
+    
+    // Level 40 -> 42 (Lava Mountain to Starlight Path)
+    ctx.beginPath();
+    ctx.moveTo(levels[39].x, levels[39].y);
+    ctx.lineTo(levels[41].x, levels[41].y);
+    ctx.stroke();
+    
+    // Level 41 -> 43 (Blueberry Hills to Peach Paradise)
+    ctx.beginPath();
+    ctx.moveTo(levels[40].x, levels[40].y);
+    ctx.lineTo(levels[42].x, levels[42].y);
+    ctx.stroke();
+    
+    // Level 40 -> 44 (Lava Mountain to Mystic Ruins)
+    ctx.beginPath();
+    ctx.moveTo(levels[39].x, levels[39].y);
+    ctx.lineTo(levels[43].x, levels[43].y);
+    ctx.stroke();
+    
+    // Level 41 -> 44 (Blueberry Hills to Mystic Ruins)
+    ctx.beginPath();
+    ctx.moveTo(levels[40].x, levels[40].y);
+    ctx.lineTo(levels[43].x, levels[43].y);
+    ctx.stroke();
+    
+    // Level 42 -> 44 (Starlight Path to Mystic Ruins)
+    ctx.beginPath();
+    ctx.moveTo(levels[41].x, levels[41].y);
+    ctx.lineTo(levels[43].x, levels[43].y);
+    ctx.stroke();
+    
+    // Level 43 -> 44 (Peach Paradise to Mystic Ruins)
+    ctx.beginPath();
+    ctx.moveTo(levels[42].x, levels[42].y);
+    ctx.lineTo(levels[43].x, levels[43].y);
+    ctx.stroke();
+    
+    // Level 44 -> 45 (Mystic Ruins to Electric Storm)
+    ctx.beginPath();
+    ctx.moveTo(levels[43].x, levels[43].y);
+    ctx.lineTo(levels[44].x, levels[44].y);
+    ctx.stroke();
+    
+    // Level 44 -> 46 (Mystic Ruins to Rainbow Bridge)
+    ctx.beginPath();
+    ctx.moveTo(levels[43].x, levels[43].y);
+    ctx.lineTo(levels[45].x, levels[45].y);
+    ctx.stroke();
+    
+    // Level 45 -> 47 (Electric Storm to Frozen Tundra)
+    ctx.beginPath();
+    ctx.moveTo(levels[44].x, levels[44].y);
+    ctx.lineTo(levels[46].x, levels[46].y);
+    ctx.stroke();
+    
+    // Level 42 -> 47 (Starlight Path to Frozen Tundra)
+    ctx.beginPath();
+    ctx.moveTo(levels[41].x, levels[41].y);
+    ctx.lineTo(levels[46].x, levels[46].y);
+    ctx.stroke();
+    
+    // Level 47 -> 48 (Frozen Tundra to Panda Paradise)
+    ctx.beginPath();
+    ctx.moveTo(levels[46].x, levels[46].y);
+    ctx.lineTo(levels[47].x, levels[47].y);
+    ctx.stroke();
+    
+    // Level 46 -> 48 (Rainbow Bridge to Panda Paradise)
+    ctx.beginPath();
+    ctx.moveTo(levels[45].x, levels[45].y);
+    ctx.lineTo(levels[47].x, levels[47].y);
     ctx.stroke();
 
     ctx.setLineDash([]);
@@ -1800,7 +2648,7 @@ function drawPartyText(time) {
     const totalStars = levels.reduce((sum, lvl) => sum + lvl.stars, 0);
     ctx.font = 'bold 36px sans-serif';
     ctx.fillStyle = '#ffd700';
-    ctx.fillText(`Total Stars: ${totalStars} / 30 ⭐`, canvas.width / 2, canvas.height - 120);
+    ctx.fillText(`Total Stars: ${totalStars} / 144 ⭐`, canvas.width / 2, canvas.height - 120);
     
     ctx.restore();
 }
