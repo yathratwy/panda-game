@@ -2023,12 +2023,114 @@ function updateJaguars() {
         const dx = panda.x - jaguar.x;
         const dy = panda.y - jaguar.y;
         const dist = Math.sqrt(dx*dx + dy*dy);
-        
+
         if (dist > 0) {
-            jaguar.x += (dx / dist) * jaguar.speed;
-            jaguar.y += (dy / dist) * jaguar.speed;
+            // Check if line of sight is blocked by obstacles
+            if (isLineOfSightBlocked(jaguar.x, jaguar.y, panda.x, panda.y)) {
+                // If blocked, try to navigate around obstacles
+                const newPos = navigateAroundObstacle(jaguar.x, jaguar.y, panda.x, panda.y, jaguar.speed);
+                jaguar.x = newPos.x;
+                jaguar.y = newPos.y;
+            } else {
+                // Direct path to panda
+                jaguar.x += (dx / dist) * jaguar.speed;
+                jaguar.y += (dy / dist) * jaguar.speed;
+            }
         }
     });
+}
+
+function isLineOfSightBlocked(x1, y1, x2, y2) {
+    // Check if the line between two points intersects any obstacles
+    for (const obs of obstacles) {
+        if (obs.type === 'bridge') continue; // Bridges don't block line of sight
+
+        const obsRadius = obs.radius || 30;
+        const dist = distanceToLineSegment(obs.x, obs.y, x1, y1, x2, y2);
+
+        if (dist < obsRadius) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function distanceToLineSegment(px, py, x1, y1, x2, y2) {
+    // Calculate distance from point (px, py) to line segment (x1,y1)-(x2,y2)
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const length = Math.sqrt(dx*dx + dy*dy);
+
+    if (length === 0) return Math.sqrt((px - x1)*(px - x1) + (py - y1)*(py - y1));
+
+    const t = Math.max(0, Math.min(1, ((px - x1)*dx + (py - y1)*dy) / (length*length)));
+    const closestX = x1 + t * dx;
+    const closestY = y1 + t * dy;
+
+    return Math.sqrt((px - closestX)*(px - closestX) + (py - closestY)*(py - closestY));
+}
+
+function navigateAroundObstacle(jaguarX, jaguarY, targetX, targetY, speed) {
+    // Simple obstacle avoidance: try moving perpendicular to the obstacle
+    let bestX = jaguarX;
+    let bestY = jaguarY;
+    let bestDistance = Infinity;
+
+    // Try several directions to find the best path around obstacles
+    const directions = [
+        { x: 0, y: -1 }, { x: 0, y: 1 }, { x: -1, y: 0 }, { x: 1, y: 0 },
+        { x: 0.707, y: -0.707 }, { x: 0.707, y: 0.707 },
+        { x: -0.707, y: -0.707 }, { x: -0.707, y: 0.707 }
+    ];
+
+    for (const dir of directions) {
+        const testX = jaguarX + dir.x * speed;
+        const testY = jaguarY + dir.y * speed;
+
+        // Keep within bounds
+        const clampedX = Math.max(25, Math.min(canvas.width - 25, testX));
+        const clampedY = Math.max(25, Math.min(canvas.height - 25, testY));
+
+        // Check if this position has better line of sight to target
+        if (!isLineOfSightBlocked(clampedX, clampedY, targetX, targetY) ||
+            !checkObstacleCollision(clampedX, clampedY, 20)) {
+
+            const distToTarget = Math.sqrt((targetX - clampedX)*(targetX - clampedX) +
+                                          (targetY - clampedY)*(targetY - clampedY));
+
+            if (distToTarget < bestDistance) {
+                bestDistance = distToTarget;
+                bestX = clampedX;
+                bestY = clampedY;
+            }
+        }
+    }
+
+    // If no better position found, move directly but avoid obstacles
+    if (bestDistance === Infinity) {
+        const dx = targetX - jaguarX;
+        const dy = targetY - jaguarY;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+
+        if (dist > 0) {
+            const moveX = jaguarX + (dx / dist) * speed;
+            const moveY = jaguarY + (dy / dist) * speed;
+
+            // Try to slide along obstacles
+            if (!checkObstacleCollision(moveX, moveY, 20)) {
+                bestX = moveX;
+                bestY = moveY;
+            } else if (!checkObstacleCollision(moveX, jaguarY, 20)) {
+                bestX = moveX;
+                bestY = jaguarY;
+            } else if (!checkObstacleCollision(jaguarX, moveY, 20)) {
+                bestX = jaguarX;
+                bestY = moveY;
+            }
+        }
+    }
+
+    return { x: bestX, y: bestY };
 }
 
 function checkCollisions() {
