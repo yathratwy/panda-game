@@ -1257,12 +1257,64 @@ function drawPanda(x, y, size) {
 }
 
 function drawJaguar(x, y, size) {
-    ctx.fillStyle = '#1a1a1a';
+    // Main body - jaguar orange/yellow base
+    ctx.fillStyle = '#D2691E'; // Saddle brown
     ctx.beginPath();
     ctx.ellipse(x, y, size * 0.5, size * 0.45, 0, 0, Math.PI * 2);
     ctx.fill();
 
-    // Ears
+    // Jaguar spots/rosettes pattern
+    ctx.fillStyle = '#000'; // Black spots
+    const spotSize = size * 0.08;
+
+    // Head spots
+    ctx.beginPath();
+    ctx.arc(x - size * 0.15, y - size * 0.15, spotSize, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(x + size * 0.15, y - size * 0.15, spotSize, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Body rosettes (larger, ring-like spots)
+    // Left side
+    ctx.beginPath();
+    ctx.arc(x - size * 0.25, y - size * 0.05, spotSize * 1.2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#D2691E'; // Inner ring
+    ctx.beginPath();
+    ctx.arc(x - size * 0.25, y - size * 0.05, spotSize * 0.6, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = '#000';
+    ctx.beginPath();
+    ctx.arc(x - size * 0.25, y + size * 0.1, spotSize * 1.2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#D2691E';
+    ctx.beginPath();
+    ctx.arc(x - size * 0.25, y + size * 0.1, spotSize * 0.6, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Right side
+    ctx.fillStyle = '#000';
+    ctx.beginPath();
+    ctx.arc(x + size * 0.25, y - size * 0.05, spotSize * 1.2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#D2691E';
+    ctx.beginPath();
+    ctx.arc(x + size * 0.25, y - size * 0.05, spotSize * 0.6, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = '#000';
+    ctx.beginPath();
+    ctx.arc(x + size * 0.25, y + size * 0.1, spotSize * 1.2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#D2691E';
+    ctx.beginPath();
+    ctx.arc(x + size * 0.25, y + size * 0.1, spotSize * 0.6, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Ears - with white inner ears
+    ctx.fillStyle = '#000';
     ctx.beginPath();
     ctx.moveTo(x - size * 0.35, y - size * 0.3);
     ctx.lineTo(x - size * 0.25, y - size * 0.5);
@@ -1274,34 +1326,73 @@ function drawJaguar(x, y, size) {
     ctx.lineTo(x + size * 0.15, y - size * 0.3);
     ctx.fill();
 
-    // Eyes
+    // Inner ears (white)
+    ctx.fillStyle = '#FFF';
+    ctx.beginPath();
+    ctx.moveTo(x - size * 0.32, y - size * 0.32);
+    ctx.lineTo(x - size * 0.25, y - size * 0.45);
+    ctx.lineTo(x - size * 0.18, y - size * 0.32);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(x + size * 0.32, y - size * 0.32);
+    ctx.lineTo(x + size * 0.25, y - size * 0.45);
+    ctx.lineTo(x + size * 0.18, y - size * 0.32);
+    ctx.fill();
+
+    // Eyes - jaguar eyes (more cat-like)
     ctx.fillStyle = '#FFD700';
     ctx.beginPath();
-    ctx.ellipse(x - size * 0.18, y - size * 0.1, size * 0.1, size * 0.07, 0, 0, Math.PI * 2);
+    ctx.ellipse(x - size * 0.18, y - size * 0.1, size * 0.08, size * 0.12, 0, 0, Math.PI * 2);
     ctx.fill();
     ctx.beginPath();
-    ctx.ellipse(x + size * 0.18, y - size * 0.1, size * 0.1, size * 0.07, 0, 0, Math.PI * 2);
+    ctx.ellipse(x + size * 0.18, y - size * 0.1, size * 0.08, size * 0.12, 0, 0, Math.PI * 2);
     ctx.fill();
 
-    // Pupils
+    // Pupils - vertical slits like a cat
     ctx.fillStyle = '#000';
     ctx.beginPath();
-    ctx.ellipse(x - size * 0.18, y - size * 0.1, size * 0.03, size * 0.06, 0, 0, Math.PI * 2);
+    ctx.ellipse(x - size * 0.18, y - size * 0.1, size * 0.02, size * 0.08, 0, 0, Math.PI * 2);
     ctx.fill();
     ctx.beginPath();
-    ctx.ellipse(x + size * 0.18, y - size * 0.1, size * 0.03, size * 0.06, 0, 0, Math.PI * 2);
+    ctx.ellipse(x + size * 0.18, y - size * 0.1, size * 0.02, size * 0.08, 0, 0, Math.PI * 2);
     ctx.fill();
 
-    // Teeth
+    // Nose
+    ctx.fillStyle = '#000';
+    ctx.beginPath();
+    ctx.ellipse(x, y + size * 0.05, size * 0.03, size * 0.02, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Whiskers
+    ctx.strokeStyle = '#000';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(x - size * 0.4, y - size * 0.05);
+    ctx.lineTo(x - size * 0.6, y - size * 0.08);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(x - size * 0.4, y + size * 0.02);
+    ctx.lineTo(x - size * 0.6, y);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(x + size * 0.4, y - size * 0.05);
+    ctx.lineTo(x + size * 0.6, y - size * 0.08);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(x + size * 0.4, y + size * 0.02);
+    ctx.lineTo(x + size * 0.6, y);
+    ctx.stroke();
+
+    // Mouth/teeth
     ctx.fillStyle = '#FFF';
     ctx.beginPath();
     ctx.moveTo(x - size * 0.05, y + size * 0.15);
-    ctx.lineTo(x - size * 0.03, y + size * 0.25);
+    ctx.lineTo(x - size * 0.03, y + size * 0.22);
     ctx.lineTo(x - size * 0.01, y + size * 0.15);
     ctx.fill();
     ctx.beginPath();
     ctx.moveTo(x + size * 0.05, y + size * 0.15);
-    ctx.lineTo(x + size * 0.03, y + size * 0.25);
+    ctx.lineTo(x + size * 0.03, y + size * 0.22);
     ctx.lineTo(x + size * 0.01, y + size * 0.15);
     ctx.fill();
 }
